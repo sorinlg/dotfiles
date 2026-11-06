@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+################################################
+#  atuin - shell history                       #
+################################################
+# Eager: preexec/precmd hooks + Ctrl-R keybinding must be active from the first
+# command, so (unlike pyenv/rbenv/nvm) this can't be deferred behind a wrapper.
+# --disable-up-arrow keeps Up-arrow as the shell's normal history-step behavior;
+# Ctrl-R still opens atuin's search.
+if (( $+commands[atuin] )); then
+  eval "$(atuin init zsh --disable-up-arrow)"
+fi
+
+################################################
+# atuin - completion-only (no command wrapper) #
+################################################
+# `atuin init zsh` only wires keybindings (no compdef), so subcommand completion
+# (atuin <TAB> -> search/history/sync/...) is registered separately and lazily.
+_register_completion_only_zsh "atuin" "atuin" "atuin gen-completions --shell zsh"

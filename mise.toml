@@ -1,0 +1,74 @@
+[tasks.setup]
+description = "Install/reinstall dotfiles (wraps ./install.sh)"
+run = "./install.sh"
+
+[tasks.uninstall]
+description = "Uninstall dotfiles (wraps ./uninstall.sh, interactive)"
+run = "./uninstall.sh"
+
+[tasks.test]
+description = "Run the dotfiles test suite"
+run = "tools/test-dotfiles.sh"
+
+[tasks.benchmark]
+description = "Benchmark zsh startup time (mise run benchmark -- <runs>)"
+run = "tools/benchmark-shell-startup.sh"
+
+[tasks.clean]
+description = "Basic cleanup of temp files"
+run = "tools/cleanup-dotfiles.sh"
+
+[tasks."clean-all"]
+description = "Full cleanup including backups and compiled files"
+run = "tools/cleanup-dotfiles.sh --all"
+
+[tasks.compile]
+description = "Compile zsh configs to .zwc bytecode"
+run = "lib/build/compile-configs.sh"
+
+[tasks."k9s-skins"]
+# --discover/--force are documented in the script header but not yet implemented (only --help works today).
+description = "Generate k9s skins and sofka color overrides from powerlevel10k colors"
+run = "tools/generate-k9s-skins.sh"
+
+[tasks."git-signing"]
+description = "Set up SSH commit signing (mise run git-signing -- <ssh-pub-key>)"
+run = "tools/setup-git-signing.sh"
+
+[tasks."config:dotfiles:pull"]
+description = "Pull config.sh from its 1Password backup; shows a diff and asks for confirmation (skipped on a fresh clone with no local config.sh yet)"
+run = "tools/config-sync.sh dotfiles-pull"
+
+[tasks."config:dotfiles:push"]
+description = "Push local config.sh to 1Password (shows a diff and asks for confirmation first)"
+run = "tools/config-sync.sh dotfiles-push"
+
+[tasks."config:diff"]
+description = "Review a config diff without changing anything: dotfiles config.sh or an app plist (mise run config:diff -- [--app rectangle|clipy] [--direction pull|push]; default dotfiles/pull)"
+run = "tools/config-sync.sh diff"
+
+[tasks."config:app:pull"]
+description = "Pull a defaults-backed app's live preferences into its repo plist copy, curated and diffed (mise run config:app:pull -- --app rectangle|clipy)"
+run = "tools/config-sync.sh app-pull"
+
+[tasks."config:app:push"]
+description = "Push a defaults-backed app's repo plist copy into its live preferences and restart the app if running (mise run config:app:push -- --app rectangle|clipy)"
+run = "tools/config-sync.sh app-push"
+
+[tasks."tart:golden"]
+description = "Build the local golden macOS images: vanilla+ssh key, then +Homebrew (mise run tart:golden -- [--rebuild] [--prune])"
+run = "tools/vm-testing/tart-golden.sh"
+
+[tasks."tart:key:get"]
+description = "Create (or, with TART_SSH_KEY_OP_REF set, fetch from 1Password) the SSH key used to reach Tart test VMs"
+run = "tools/vm-testing/fetch-tart-ssh-key.sh"
+
+# TODO: tart:test cannot find the guest IP when launched through `mise run` on some macOS
+# versions; run `/bin/bash tools/vm-testing/tart-smoke-test.sh` directly until the cause is found.
+[tasks."tart:test"]
+description = "Run the Tart VM fresh-install smoke test (mise run tart:test -- [--tier golden|brew] [--no-graphics] [--keep])"
+run = "tools/vm-testing/tart-smoke-test.sh"
+
+[tasks."tart:clean"]
+description = "Delete Tart VMs left behind by tart:test --keep (mise run tart:clean -- [--all] to also drop both golden tiers and the cached OCI image)"
+run = "tools/vm-testing/tart-clean.sh"

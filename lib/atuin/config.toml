@@ -1,0 +1,39 @@
+## Atuin configuration, managed by dotfiles (symlinked into ~/.config/atuin/config.toml).
+## Atuin never rewrites this file in place (login/sync/register only touch the separate
+## session/key/db files), so a plain symlink is safe. See `atuin default-config` for the
+## full list of available keys and their defaults.
+
+## which style to use
+## possible values: auto, full, compact
+style = "compact"
+
+## the maximum number of lines the interface should take up
+## set it to 0 to always go full screen
+inline_height = 22
+
+## Defaults to true. If enabled, upon hitting enter Atuin will immediately execute the
+## command. Press tab to return to the shell and edit.
+enter_accept = false
+
+## Whichever mode you start in, you can still cycle through the rest with ctrl-r.
+filter_mode = "global"
+
+## How often to automatically sync with the server (human-readable, e.g. 10s, 20m, 1h).
+sync_frequency = "20m"
+search_mode = "daemon-fuzzy"
+
+[sync]
+# Enable sync v2
+records = true
+
+[keys]
+# Defaults to true. If disabled, using the up/down key won't exit the TUI when scrolled
+# past the first/last entry.
+scroll_exits = false
+
+[daemon]
+enabled = true
+autostart = true
+
+[ai]
+enabled = true
