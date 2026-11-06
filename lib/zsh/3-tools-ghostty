@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+
+################################################
+#  Ghostty Terminal Emulator                  #
+################################################
+
+# Ghostty-specific environment variables and aliases
+
+# Detect if running inside Ghostty
+if [[ "${TERM_PROGRAM}" == "ghostty" ]]; then
+    # Set terminal identification
+    export GHOSTTY_SHELL_INTEGRATION="true"
+
+    # Optional: Add Ghostty-specific aliases or functions here
+    # Example: quick config reload
+    alias ghostty-reload='killall -SIGUSR1 ghostty'
+fi

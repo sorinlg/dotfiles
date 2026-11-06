@@ -1,0 +1,170 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "remove_trailing_whitespace_on_save": true,
+  "cli_default_open_behavior": "new_window",
+  "project_panel": {
+    "dock": "left",
+  },
+  "outline_panel": {
+    "dock": "right",
+  },
+  "collaboration_panel": {
+    "dock": "right",
+  },
+  "git_panel": {
+    "dock": "right",
+  },
+  "tab_bar": {
+    "show": true,
+    "show_pinned_tabs_in_separate_row": false,
+  },
+  "tabs": {
+    "file_icons": true,
+    "git_status": true,
+    "show_close_button": "hover",
+    "activate_on_close": "history",
+    "close_position": "right",
+  },
+  "toolbar": {
+    "breadcrumbs": true,
+    "quick_actions": true,
+  },
+  "title_bar": {
+    "show_menus": false,
+  },
+  "status_bar": {
+    "show_active_file": false,
+  },
+  "search": {
+    "button": true,
+  },
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry",
+    },
+  },
+  "base_keymap": "VSCode",
+  "seed_search_query_from_cursor": "always",
+  "use_system_window_tabs": true,
+  "buffer_font_fallbacks": ["MesloLGS Nerd Font", "Menlo", "Monaco", "Courier New"],
+  "file_types": {
+    "json": [".auto-changelog"],
+    "ini": [".gitconfig*", "**/.aws/config", "aliases"],
+    "javascript": ["*.js.tpl"],
+    "makefile": ["Makefile.*"],
+    "ansible": [
+      "**/defaults/**/*",
+      "**/tasks/**/*.yml",
+      "**/handler/*.yml",
+      "**/*_vars/**/*.yml",
+      "**/roles/**/*.yml",
+      "**/playbooks/**/*.yml",
+      "**/*ansible*/**/*.yml",
+      "**/vars/**/*.yml",
+      "**/inventory/*/*",
+    ],
+    "terraform-vars": ["*.tfvars"],
+    "yaml": [".klam-ext", "*.yml", "*.yaml"],
+    "helm": [
+      "**/domain.patch.yaml",
+      "**/templates/*.yaml",
+      "**/templates/*.yml",
+    ],
+  },
+  "auto_indent_on_paste": true,
+  "show_edit_predictions": true,
+  "ensure_final_newline_on_save": true,
+  "tab_size": 2,
+  "colorize_brackets": false,
+  "indent_guides": {
+    "enabled": true,
+    "coloring": "fixed",
+  },
+  // To match VSCode's Monokai Pro icons, install the "Monokai Pro Icons"
+  // or "VSCode Icons" extension (zed: extensions), then change the value below.
+  "icon_theme": "Bearded Icons",
+  "agent": {
+    "button": true,
+    "dock": "left",
+    "tool_permissions": {
+      "tools": {
+        "fetch": {
+          "always_allow": [
+            {
+              "pattern": "^https?://zed\\.dev",
+            },
+          ],
+        },
+      },
+    },
+    "default_model": {
+      "effort": "high",
+      "enable_thinking": true,
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6-latest",
+    },
+  },
+  "telemetry": {
+    "metrics": false,
+  },
+  "ui_font_size": 14,
+  "ui_font_weight": 400,
+  "buffer_font_size": 13,
+  "buffer_font_family": "Fira Code",
+  "buffer_font_weight": 400,
+  "buffer_font_features": {
+    "calt": true,
+  },
+  "terminal": {
+    "font_size": 14,
+    "max_scroll_history_lines": 99999,
+    "option_as_meta": true,
+    "env": {
+      "Q_NEW_SESSION": "\"1\"",
+    },
+    "copy_on_select": true,
+    "font_family": "FiraCode Nerd Font Mono",
+    "font_fallbacks": ["MesloLGS Nerd Font", "Menlo", "Monaco", "Courier New"],
+    "line_height": "standard",
+    "minimum_contrast": 1,
+    "cursor_shape": "block",
+    "blinking": "off",
+    "font_features": {
+      "calt": false,
+    },
+  },
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "Monokai Pro (Filter Spectrum)",
+  },
+  "theme_overrides": {
+    "Monokai Pro (Filter Spectrum)": {
+      "background": "#19181a",
+      "editor.indent_guide": "#3a3a3a",
+      "editor.indent_guide_active": "#ff2d2d",
+      "panel.background": "#19181a",
+      "tab_bar.background": "#19181a",
+      "status_bar.background": "#19181a",
+      "title_bar.background": "#19181a",
+      "border": "#19181a",
+      "tab.inactive_background": "#19181a",
+      "terminal.background": "#000000ff",
+      "terminal.foreground": "#ffffff",
+      "players": [
+        {
+          "cursor": "#ffffff",
+          "background": "#ffffff",
+          "selection": "#ffffff33",
+        },
+      ],
+    },
+  },
+}

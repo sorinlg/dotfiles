@@ -1,0 +1,484 @@
+{
+  "files.insertFinalNewline": true,
+  "editor.find.seedSearchStringFromSelection": "always",
+  "editor.fontLigatures": true,
+  // "editor.fontLigatures": "'calt', 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'zero', 'onum'",
+  "editor.fontFamily": "MesloLGS Nerd Font, Fira Code, Menlo, Monaco, 'Courier New', monospace",
+  "editor.fontWeight": "440",
+  "terminal.integrated.fontSize": 13,
+  "terminal.integrated.fontFamily": "MesloLGS Nerd Font, FiraCode Nerd Font Mono, Menlo, Monaco, 'Courier New', monospace",
+  "editor.fontSize": 13,
+  "editor.scrollBeyondLastLine": true,
+  "editor.tabSize": 2,
+  "files.trimTrailingWhitespace": true,
+  "editor.formatOnPaste": true,
+  "editor.snippetSuggestions": "top",
+  "terminal.integrated.tabs.hideCondition": "never",
+  "terminal.external.osxExec": "Ghostty.app",
+  "workbench.colorCustomizations": {
+    "editorIndentGuide.activeBackground1": "#ff0000",
+    "editorBracketPairGuide.activeBackground1": "#ff0000",
+    "editorBracketPairGuide.activeBackground2": "#ff0000",
+    "editorBracketPairGuide.activeBackground3": "#ff0000",
+    "editorBracketPairGuide.activeBackground4": "#ff0000",
+    "editorBracketPairGuide.activeBackground5": "#ff0000",
+    "editorBracketPairGuide.activeBackground6": "#ff0000",
+    "editorBracketPairGuide.background1": "#00000000",
+    "editorBracketPairGuide.background2": "#00000000",
+    "editorBracketPairGuide.background3": "#00000000",
+    "editorBracketPairGuide.background4": "#00000000",
+    "editorBracketPairGuide.background5": "#00000000",
+    "editorBracketPairGuide.background6": "#00000000",
+    "terminal.findMatchBorder": "#ffffff",
+    "terminal.findMatchHighlightBackground": "#ffffff40",
+    "#terminal.findMatchHighlightBorder": "#e7e700",
+    "terminal.selectionBackground": "#ff110061",
+    "terminal.background": "#000000"
+  },
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.autoIndent": "none",
+  },
+  "[json]": {
+    "editor.tabSize": 2,
+  },
+  "githubPullRequests.remotes": [
+    "origin",
+    "upstream",
+    "fork"
+  ],
+  "workbench.iconTheme": "Monokai Pro (Filter Spectrum) Icons",
+  "editor.suggestSelection": "first",
+  "workbench.startupEditor": "newUntitledFile",
+  "files.associations": {
+    ".auto-changelog": "json",
+    "*.js.tpl": "javascript",
+    ".klam-ext": "yaml",
+    "Makefile.*": "makefile",
+    "**/defaults/**/*": "ansible",
+    "**/tasks/**/*.yml": "ansible",
+    "**/handler/*.yml": "ansible",
+    "**/*_vars/**/*.yml": "ansible",
+    "**/roles/**/*.yml": "ansible",
+    "**/playbooks/**/*.yml": "ansible",
+    "**/*ansible*/**/*.yml": "ansible",
+    "**/vars/**/*.yml": "ansible",
+    "**/inventory/*/*": "ansible",
+    "*.tfvars": "terraform-vars",
+    "*.yml": "yaml",
+    "*.yaml": "yaml",
+    ".gitconfig*": "ini",
+    "**/domain.patch.yaml": "helm",
+    "**/.aws/config": "ini",
+    "**/templates/*.yaml": "helm",
+    "**/templates/*.yml": "helm",
+    "aliases": "ini"
+  },
+  "git.autofetch": true,
+  "[terraform]": {
+    "editor.formatOnSave": true
+  },
+  "[terraform-vars]": {
+    "editor.formatOnSave": true
+  },
+  "git.confirmSync": false,
+  "autoDarkMode.darkTheme": "Monokai Pro (Filter Spectrum)",
+  "autoDarkMode.lightTheme": "Monokai Pro (Filter Spectrum)",
+  "workbench.editorAssociations": {
+    "*.md": "vscode.markdown.preview.editor",
+    "*.copilotmd": "vscode.markdown.preview.editor",
+    "git-rebase-todo": "gitlens.rebase",
+    "*.excalidraw": "editor.excalidraw"
+  },
+  "redhat.telemetry.enabled": false,
+  "vs-kubernetes": {
+    "vs-kubernetes.namespace": "",
+    "vs-kubernetes.kubectl-path": "/opt/homebrew/bin/kubectl",
+    "vs-kubernetes.helm-path": "/opt/homebrew/bin/helm",
+    "vs-kubernetes.minikube-path": "",
+    "vs-kubernetes.kubectlVersioning": "user-provided",
+    "vs-kubernetes.outputFormat": "yaml",
+    "vs-kubernetes.autoCleanupOnDebugTerminate": false,
+    "vs-kubernetes.nodejs-autodetect-remote-root": true,
+    "vs-kubernetes.nodejs-remote-root": "",
+    "vs-kubernetes.nodejs-debug-port": 9229,
+    "vs-kubernetes.local-tunnel-debug-provider": "",
+    "checkForMinikubeUpgrade": true,
+    "imageBuildTool": "Docker",
+    "vs-kubernetes.minikube-show-information-expiration": "2024-03-10T12:28:36.865Z",
+    "vs-kubernetes.crd-code-completion": "enabled"
+  },
+  "gitlens.hovers.currentLine.over": "line",
+  "terminal.integrated.scrollback": 50000,
+  "terminal.integrated.fastScrollSensitivity": 1,
+  "terminal.integrated.mouseWheelScrollSensitivity": 0.3,
+  "terminal.integrated.smoothScrolling": true,
+  "security.workspace.trust.untrustedFiles": "open",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "editor.formatOnSave": true,
+  "json.schemas": [],
+  "yaml.customTags": [
+    "!And",
+    "!And sequence",
+    "!If",
+    "!If sequence",
+    "!Not",
+    "!Not sequence",
+    "!Equals",
+    "!Equals sequence",
+    "!Or",
+    "!Or sequence",
+    "!FindInMap",
+    "!FindInMap sequence",
+    "!Base64",
+    "!Join",
+    "!Join sequence",
+    "!Cidr",
+    "!Ref",
+    "!Sub",
+    "!Sub sequence",
+    "!GetAtt",
+    "!GetAZs",
+    "!ImportValue",
+    "!ImportValue sequence",
+    "!Select",
+    "!Select sequence",
+    "!Split",
+    "!Split sequence"
+  ],
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.hcl$",
+        "cmd": "terragrunt hclfmt --terragrunt-hclfmt-file ${file}"
+      }
+    ]
+  },
+  "editor.suggest.showMethods": true,
+  "editor.suggest.preview": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "terminal.integrated.copyOnSelection": true,
+  "workbench.preferredDarkColorTheme": "Monokai Pro (Filter Spectrum)",
+  "terraform.languageServer.enable": true,
+  "[python]": {
+    // "editor.formatOnType": true
+  },
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmDelete": false,
+  "todohighlight.isEnable": true,
+  "todohighlight.include": [
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.html",
+    "**/*.php",
+    "**/*.css",
+    "**/*.tf",
+    "**/*.tfvars",
+    "**/*.yml",
+    "**/*.hcl",
+    "**/*.scss"
+  ],
+  "todohighlight.exclude": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.vscode/**",
+    "**/.github/**",
+    "**/.terraform/**",
+    "**/.terragrunt/**",
+    "**/_output/**",
+    "**/*.min.*",
+    "**/*.map",
+    "**/.next/**"
+  ],
+  "todohighlight.keywords": [
+    "DEBUG:",
+    "REVIEW:",
+    {
+      "text": "NOTE:",
+      "color": "#ff0000",
+      "backgroundColor": "yellow",
+      "overviewRulerColor": "grey"
+    },
+    {
+      "text": "RELEASE:",
+      "color": "#ff0000",
+      "backgroundColor": "#aaafaf",
+      "overviewRulerColor": "red"
+    },
+    {
+      "text": "HACK:",
+      "color": "#000",
+      "isWholeLine": false,
+    }
+  ],
+  "todohighlight.toggleURI": true,
+  "git.path": "/opt/homebrew/bin/git",
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "editor.inlineSuggest.enabled": true,
+  "gitlens.codeLens.enabled": false,
+  "go.toolsManagement.autoUpdate": true,
+  "go.toolsEnvVars": {
+    "PATH": "${env:HOME}/.local/share/mise/shims:${env:PATH}",
+    "GOROOT": ""
+  },
+  "[go.mod]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+  },
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    // Optional: Disable snippets, as they conflict with completion ranking.
+    "editor.snippetSuggestions": "none",
+  },
+  "go.useLanguageServer": true,
+  "go.lintTool": "golint",
+  "gopls": {
+    // Add parameter placeholders when completing a function.
+    "usePlaceholders": true,
+    // If true, enable additional analyses with staticcheck.
+    // Warning: This will significantly increase memory usage.
+    "staticcheck": false,
+  },
+  "editor.indentSize": "tabSize",
+  "workbench.editor.revealIfOpen": true,
+  "workbench.editor.closeEmptyGroups": false,
+  "workbench.editor.languageDetection": false,
+  "editor.guides.bracketPairs": "active",
+  "editor.language.colorizedBracketPairs": [],
+  "editor.matchBrackets": "near",
+  "githubPullRequests.terminalLinksHandler": "github",
+  "githubPullRequests.showPullRequestNumberInTree": true,
+  "githubPullRequests.queries": [
+    {
+      "label": "Local Pull Request Branches",
+      "query": "default"
+    },
+    {
+      "label": "Created By Me",
+      "query": "repo:${owner}/${repository} is:open author:${user}"
+    },
+    {
+      "label": "All Open",
+      "query": "default"
+    }
+  ],
+  "githubPullRequests.fileListLayout": "tree",
+  "githubPullRequests.pullBranch": "never",
+  "git.openRepositoryInParentFolders": "never",
+  "editor.smoothScrolling": true,
+  "workbench.list.smoothScrolling": true,
+  "editor.inlineSuggest.showToolbar": "always",
+  "[go][go.mod]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "terminal.integrated.profiles.osx": {
+    "bash": {
+      "path": "bash",
+      "args": [
+        "-l"
+      ],
+      "icon": "terminal-bash"
+    },
+    "zsh": {
+      "path": "zsh",
+      "args": [
+        "-l"
+      ]
+    },
+    "fish": {
+      "path": "fish",
+      "args": [
+        "-l"
+      ]
+    },
+    "tmux": {
+      "path": "tmux",
+      "icon": "terminal-tmux"
+    },
+    "pwsh": {
+      "path": "pwsh",
+      "icon": "terminal-powershell"
+    }
+  },
+  "terminal.integrated.macOptionIsMeta": true,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "terminal.integrated.minimumContrastRatio": 1,
+  "settingsSync.ignoredSettings": [
+    "-window.zoomLevel"
+  ],
+  "application.shellEnvironmentResolutionTimeout": 20,
+  "makefile.configureOnOpen": true,
+  "editor.accessibilitySupport": "off",
+  "editor.screenReaderAnnounceInlineSuggestion": false,
+  "diffEditor.renderSideBySide": false,
+  "chat.mcp.discovery.enabled": {
+    "claude-desktop": true,
+    "windsurf": true,
+    "cursor-global": true,
+    "cursor-workspace": true
+  },
+  "window.confirmSaveUntitledWorkspace": false,
+  "terminal.integrated.shellIntegration.history": 10000,
+  "githubPullRequests.codingAgent.uiIntegration": false,
+  "chat.agent.maxRequests": 100,
+  "inlineChat.enableV2": true,
+  "chat.todoListTool.enabled": true,
+  "editor.aiStats.enabled": true,
+  "chat.agentSessionsViewLocation": "view",
+  "chat.checkpoints.showFileChanges": true,
+  "inlineChat.notebookAgent": true,
+  "workbench.colorTheme": "Monokai Pro (Filter Spectrum)",
+  "[dockercompose]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced",
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": false,
+      "strings": true
+    },
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "gitlens.launchpad.indicator.enabled": false,
+  "gitlens.launchpad.indicator.polling.enabled": false,
+  "chat.tools.terminal.autoApprove": {
+    "cd": true,
+    "echo": true,
+    "ls": true,
+    "pwd": true,
+    "cat": true,
+    "head": true,
+    "tail": true,
+    "findstr": true,
+    "wc": true,
+    "tr": true,
+    "cut": true,
+    "cmp": true,
+    "which": true,
+    "basename": true,
+    "dirname": true,
+    "realpath": true,
+    "readlink": true,
+    "stat": true,
+    "file": true,
+    "du": true,
+    "df": true,
+    "sleep": true,
+    "git status": true,
+    "git log": true,
+    "git show": true,
+    "git diff": true,
+    "Get-ChildItem": true,
+    "Get-Content": true,
+    "Get-Date": true,
+    "Get-Random": true,
+    "Get-Location": true,
+    "Write-Host": true,
+    "Write-Output": true,
+    "Split-Path": true,
+    "Join-Path": true,
+    "Start-Sleep": true,
+    "Where-Object": true,
+    "/^Select-[a-z0-9]/i": true,
+    "/^Measure-[a-z0-9]/i": true,
+    "/^Compare-[a-z0-9]/i": true,
+    "/^Format-[a-z0-9]/i": true,
+    "/^Sort-[a-z0-9]/i": true,
+    "column": true,
+    "/^column\\b.*-c\\s+[0-9]{4,}/": false,
+    "date": true,
+    "/^date\\b.*(-s|--set)\\b/": false,
+    "find": true,
+    "/^find\\b.*-(delete|exec|execdir|fprint|fprintf|fls|ok|okdir)\\b/": false,
+    "grep": true,
+    "/^grep\\b.*-(f|P)\\b/": false,
+    "sort": true,
+    "/^sort\\b.*-(o|S)\\b/": false,
+    "tree": true,
+    "/^tree\\b.*-o\\b/": false,
+    "/\\(.+\\)/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/\\{.+\\}/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/`.+`/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "rm": false,
+    "rmdir": false,
+    "del": false,
+    "Remove-Item": false,
+    "ri": false,
+    "rd": false,
+    "erase": false,
+    "dd": false,
+    "kill": false,
+    "ps": false,
+    "top": false,
+    "Stop-Process": false,
+    "spps": false,
+    "taskkill": false,
+    "taskkill.exe": false,
+    "curl": false,
+    "wget": false,
+    "Invoke-RestMethod": false,
+    "Invoke-WebRequest": false,
+    "irm": false,
+    "iwr": false,
+    "chmod": false,
+    "chown": false,
+    "Set-ItemProperty": false,
+    "sp": false,
+    "Set-Acl": false,
+    "jq": false,
+    "xargs": false,
+    "eval": false,
+    "Invoke-Expression": false,
+    "iex": false,
+    "go": true
+  },
+  "claudeCode.preferredLocation": "panel",
+  "terminal.integrated.suggest.enabled": false,
+  "window.nativeTabs": true,
+  "claudeCode.useTerminal": true,
+  "chat.viewSessions.orientation": "stacked",
+  "claudeCode.selectedModel": "opusplan",
+  "claudeCode.initialPermissionMode": "plan",
+  "python.analysis.typeCheckingMode": "basic",
+  "editor.minimap.enabled": false,
+  "workbench.activityBar.location": "top",
+  "workbench.layoutControl.enabled": true,
+  "workbench.navigationControl.enabled": true,
+  "workbench.editor.empty.hint": "hidden",
+  "githubPullRequests.codingAgent.autoCommitAndPush": false,
+  "githubPullRequests.codingAgent.enabled": false,
+  "githubPullRequests.codingAgent.promptForConfirmation": false,
+  "terminal.integrated.initialHint": false,
+  "extensions.supportAgentsWindow": {
+    "monokai.theme-monokai-pro-vscode": true
+  },
+  "claudeCode.hideOnboarding": true,
+  "diffEditor.hideUnchangedRegions.enabled": true,
+  "chat.defaultConfiguration": {
+    "approvals": "assisted"
+  },
+  "claudeCode.enableNewConversationShortcut": true
+}

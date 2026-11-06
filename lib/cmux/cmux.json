@@ -1,0 +1,159 @@
+{
+  "$schema" : "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+  "app" : {
+    "appearance" : "system",
+    "appIcon" : "automatic",
+    "commandPaletteSearchesAllSurfaces" : false,
+    "focusPaneOnFirstClick" : false,
+    "iMessageMode" : false,
+    "keepWorkspaceOpenWhenClosingLastSurface" : false,
+    "language" : "system",
+    "menuBarOnly" : false,
+    "minimalMode" : false,
+    "newWorkspacePlacement" : "afterCurrent",
+    "openMarkdownInCmuxViewer" : false,
+    "preferredEditor" : "",
+    "renameSelectsExistingName" : true,
+    "reorderOnNotification" : true,
+    "sendAnonymousTelemetry" : true,
+    "warnBeforeClosingTab" : true,
+    "warnBeforeQuit" : true
+  },
+  "automation" : {
+    "claudeBinaryPath" : "",
+    "claudeCodeIntegration" : true,
+    "cursorIntegration" : true,
+    "geminiIntegration" : true,
+    "portBase" : 9100,
+    "portRange" : 10,
+    "socketControlMode" : "cmuxOnly"
+  },
+  "browser" : {
+    "defaultSearchEngine" : "google",
+    "hostsToOpenInEmbeddedBrowser" : [
+
+    ],
+    "insecureHttpHostsAllowedInEmbeddedBrowser" : [
+      "localhost",
+      "*.localhost",
+      "127.0.0.1",
+      "::1",
+      "0.0.0.0",
+      "*.localtest.me"
+    ],
+    "interceptTerminalOpenCommandInCmuxBrowser" : true,
+    "openTerminalLinksInCmuxBrowser" : true,
+    "reactGrabVersion" : "0.1.29",
+    "showImportHintOnBlankTabs" : true,
+    "showSearchSuggestions" : true,
+    "theme" : "system",
+    "urlsToAlwaysOpenExternally" : [
+
+    ]
+  },
+  "customSidebars" : {
+    "renderer" : "inProcess"
+  },
+  "notifications" : {
+    "command" : "",
+    "customSoundFilePath" : "",
+    "dockBadge" : true,
+    "paneFlash" : true,
+    "showInMenuBar" : true,
+    "sound" : "default",
+    "unreadPaneRing" : true
+  },
+  "schemaVersion" : 1,
+  "shortcuts" : {
+    "bindings" : {
+      "findInDirectory" : {
+        "first" : {
+          "command" : true,
+          "control" : false,
+          "key" : "f",
+          "keyCode" : 3,
+          "option" : false,
+          "shift" : true
+        }
+      },
+      "globalSearch" : {
+        "first" : {
+          "command" : false,
+          "control" : false,
+          "key" : "",
+          "option" : false,
+          "shift" : false
+        }
+      },
+      "nextSidebarTab" : {
+        "first" : {
+          "command" : false,
+          "control" : true,
+          "key" : "↓",
+          "keyCode" : 125,
+          "option" : true,
+          "shift" : false
+        }
+      },
+      "prevSidebarTab" : {
+        "first" : {
+          "command" : false,
+          "control" : true,
+          "key" : "↑",
+          "keyCode" : 126,
+          "option" : true,
+          "shift" : false
+        }
+      }
+    }
+  },
+  "sidebar" : {
+    "branchLayout" : "vertical",
+    "hideAllDetails" : false,
+    "makePullRequestsClickable" : true,
+    "openPortLinksInCmuxBrowser" : true,
+    "openPullRequestLinksInCmuxBrowser" : true,
+    "showBranchDirectory" : true,
+    "showCustomMetadata" : true,
+    "showLog" : true,
+    "showNotificationMessage" : true,
+    "showPorts" : true,
+    "showProgress" : true,
+    "showPullRequests" : true,
+    "showSSH" : true
+  },
+  "sidebarAppearance" : {
+    "darkModeTintColor" : null,
+    "lightModeTintColor" : null,
+    "matchTerminalBackground" : false,
+    "tintColor" : "#000000",
+    "tintOpacity" : 0.17999999999999999
+  },
+  "terminal" : {
+    "autoResumeAgentSessions" : true,
+    "showScrollBar" : true
+  },
+  "workspaceColors" : {
+    "colors" : {
+      "Amber" : "#7D6608",
+      "Aqua" : "#0E6B8C",
+      "Blue" : "#1565C0",
+      "Brown" : "#7B3F00",
+      "Charcoal" : "#3E4B5E",
+      "Crimson" : "#922B21",
+      "Green" : "#196F3D",
+      "Indigo" : "#283593",
+      "Magenta" : "#AD1457",
+      "Navy" : "#1A5276",
+      "Olive" : "#4A5C18",
+      "Orange" : "#A04000",
+      "Purple" : "#6A1B9A",
+      "Red" : "#C0392B",
+      "Rose" : "#880E4F",
+      "Teal" : "#006B6B"
+    },
+    "indicatorStyle" : "leftRail",
+    "notificationBadgeColor" : null,
+    "selectionColor" : null
+  }
+}

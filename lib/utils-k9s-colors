@@ -1,0 +1,86 @@
+#!/usr/bin/env zsh
+# K9s Color Conversion Utilities
+# Converts ANSI 256 color codes to hex format for k9s skins and sofka overrides
+
+# xterm-256 codes 0-15 (terminal-theme dependent; standard xterm values)
+typeset -ga _K9S_ANSI_BASE16=(
+  "#000000" "#800000" "#008000" "#808000" "#000080" "#800080" "#008080" "#c0c0c0"
+  "#808080" "#ff0000" "#00ff00" "#ffff00" "#0000ff" "#ff00ff" "#00ffff" "#ffffff"
+)
+
+# Convert ANSI 256 color code (0-255) to hex
+# Usage: _k9s_ansi_to_hex 082
+# Returns: #5fff00 (status 1 and no output for invalid input)
+_k9s_ansi_to_hex() {
+  local code="$1"
+
+  [[ "$code" == <-> ]] || return 1
+  code=$((10#$code))
+  (( code <= 255 )) || return 1
+
+  if (( code < 16 )); then
+    echo "${_K9S_ANSI_BASE16[code + 1]}"
+  elif (( code < 232 )); then
+    # 6x6x6 color cube
+    local -a levels=(0 95 135 175 215 255)
+    local n=$((code - 16))
+    local ri=$((n / 36 + 1)) gi=$(((n / 6) % 6 + 1)) bi=$((n % 6 + 1))
+    printf "#%02x%02x%02x" "${levels[$ri]}" "${levels[$gi]}" "${levels[$bi]}"
+  else
+    # 24-step grayscale ramp
+    local v=$((8 + (code - 232) * 10))
+    printf "#%02x%02x%02x" $v $v $v
+  fi
+}
+
+# Generate a brighter variant of a hex color (for focusColor)
+# Usage: _k9s_brighten_hex "#ff0000"
+# Returns: Hex color approximately 30% brighter
+_k9s_brighten_hex() {
+  local hex="$1"
+
+  # Remove # prefix
+  hex="${hex#\#}"
+
+  # Extract RGB components
+  local r=$((16#${hex:0:2}))
+  local g=$((16#${hex:2:2}))
+  local b=$((16#${hex:4:2}))
+
+  # Brighten by 30% (add 77 to each component, cap at 255)
+  r=$(( r + 77 > 255 ? 255 : r + 77 ))
+  g=$(( g + 77 > 255 ? 255 : g + 77 ))
+  b=$(( b + 77 > 255 ? 255 : b + 77 ))
+
+  # Convert back to hex
+  printf "#%02x%02x%02x" $r $g $b
+}
+
+# Get hex color for a specific environment class
+# Sources color from p10k-overrides.zsh variables
+# Usage: _k9s_get_class_color PROD
+# Returns: #d70000
+_k9s_get_class_color() {
+  local class="$1"
+
+  # Source p10k overrides if not already loaded
+  if [[ -z "${_COLOR_PROD}" ]]; then
+    local p10k_overrides="${DOTFILES_DIR}/rc.d/.p10k-overrides.zsh"
+    if [[ -f "$p10k_overrides" ]]; then
+      source "$p10k_overrides"
+    else
+      return 1
+    fi
+  fi
+
+  # Get ANSI code for class
+  local var_name="_COLOR_${(U)class}"
+  local ansi_code="${(P)var_name}"
+
+  if [[ -z "$ansi_code" ]]; then
+    echo "#ffffff"  # Default to white
+    return 1
+  fi
+
+  _k9s_ansi_to_hex "$ansi_code"
+}

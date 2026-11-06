@@ -1,0 +1,107 @@
+{
+  "version": 4,
+  "lines": [
+    [
+      {
+        "id": "1",
+        "type": "model",
+        "color": "brightCyan",
+        "rawValue": true
+      },
+      {
+        "id": "0b8d4a00-ca64-4025-a260-88a3b891d297",
+        "type": "skills",
+        "color": "cyan",
+        "rawValue": true,
+        "metadata": {
+          "hide": "empty"
+        }
+      },
+      {
+        "id": "085a9105-37c5-4060-8531-0a0e8af7a7b2",
+        "type": "flex-separator",
+        "color": "white"
+      },
+      {
+        "id": "df12b4f5-175a-481b-8ac3-b07e1cdd8423",
+        "type": "session-cost"
+      },
+      {
+        "id": "70c0e346-26d5-4045-8017-764e147f0073",
+        "type": "context-bar",
+        "color": "brightBlue",
+        "metadata": {
+          "display": "slider"
+        }
+      },
+      {
+        "id": "e5e1a70b-7cf7-47c6-8c70-fd541b1ea380",
+        "type": "tokens-total",
+        "color": "brightBlue"
+      }
+    ],
+    [
+      {
+        "id": "9a528df1-8bc7-4991-95a2-e11a5251c573",
+        "type": "custom-command",
+        "color": "ansi256:4",
+        "commandPath": "basename \"${PWD}\"",
+        "preserveColors": false
+      },
+      {
+        "id": "a024527f-7b6a-4b32-bb75-dd8678293983",
+        "type": "git-changes",
+        "metadata": {
+          "hide": "no-git"
+        }
+      },
+      {
+        "id": "8e262814-10f8-4fd6-bf3f-0065832ce7be",
+        "type": "git-clean-status",
+        "metadata": {
+          "hide": "no-git"
+        }
+      },
+      {
+        "id": "c0df6e66-a516-497e-89d8-9693731720ef",
+        "type": "flex-separator"
+      },
+      {
+        "id": "3ce1afa6-9205-493d-accd-3062b15a8c02",
+        "type": "git-branch",
+        "metadata": {
+          "hide": "no-git"
+        },
+        "color": "brightYellow"
+      }
+    ]
+  ],
+  "flexMode": "full-until-compact",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "defaultSeparator": "|",
+  "defaultPadding": "",
+  "defaultPaddingSide": "both",
+  "inheritSeparatorColors": false,
+  "globalBold": true,
+  "gitCacheTtlSeconds": 2,
+  "minimalistMode": true,
+  "powerline": {
+    "enabled": false,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "theme": "custom",
+    "autoAlign": false,
+    "continueThemeAcrossLines": false
+  },
+  "installation": {
+    "method": "auto-update",
+    "packageManager": "bun"
+  }
+}
