@@ -1,0 +1,56 @@
+# Configuration template for personal dotfiles
+# Copy this file to config.sh and customize with your settings
+
+git_name='Your Name'
+git_email='your.email@domain.com'
+git_signing_key=''  # e.g. 'ssh-ed25519 AAAA...'; empty leaves commit signing off
+
+# Path configurations
+_config_go_path='/your/go/path'
+_go_root='/usr/local/go'  # Default for Intel Macs, use '/opt/homebrew/opt/go/libexec' for Apple Silicon
+_homebrew_prefix='/opt/homebrew'  # Use '/usr/local' for Intel Macs
+# Git SSH signing verification file
+# Run ./tools/setup-git-signing.sh to create this file
+_git_allowed_signers_file="${HOME}/.ssh/allowed_signers"
+
+# Commit signing (optional): set git_signing_key above to enable SSH signing.
+# _git_ssh_sign_program is only needed for a signer such as 1Password's op-ssh-sign, e.g.
+#   '/Applications/1Password.app/Contents/MacOS/op-ssh-sign'
+_git_ssh_sign_program=''
+
+# Go: comma-separated module patterns treated as private (sets GOPRIVATE), e.g. 'github.com/your-org/*'
+_go_private=''
+
+# Extra Brewfiles installed after the main one (space-separated paths), e.g. a work profile's
+_brewfile_extra=''
+
+# API tokens
+_homebrew_github_token=''  # optional; only raises Homebrew's API rate limit
+
+# Atuin sync login (required - resolved via 1Password, no plaintext fallback)
+# install.sh reads username/password/sync-key from this 1Password item via
+# `op read` (requires task 20's `op` prerequisite: installed + signed in):
+#   op://<item>/username        - built-in field
+#   op://<item>/password        - built-in field
+#   op://<item>/Atuin Sync/Sync Key - custom field, "Atuin Sync" section,
+#                                      holding your `atuin key` output
+# Override only if your vault/item name differs.
+# Leave empty to skip Atuin login and the 1Password CLI requirement entirely.
+_atuin_op_item=''  # e.g. 'op://Personal/Atuin'
+
+# Work-specific configuration paths (optional)
+# Point to external repository containing work-specific configs
+_work_config_path=''  # e.g., '/Users/you/work/company/personal-repo'
+_work_shell_config=''  # e.g., 'dotfiles/shell-config.sh'
+_work_git_config=''    # e.g., 'dotfiles/gitconfig'
+
+# Git prompt settings
+GIT_PS1_SHOWUPSTREAM="verbose"
+GIT_PS1_SHOWCOLORHINTS='yes'
+GIT_PS1_SHOWUNTRACKEDFILES='yes'
+GIT_PS1_DESCRIBE_STYLE='branch'
+
+# K9s integration (optional)
+# Sync k9s border colors with powerlevel10k environment colors
+# Functions (k9s-sync-colors) always available when k9s is installed
+#_k9s_sync_colours=true              # Auto-sync colors and contexts during install.sh

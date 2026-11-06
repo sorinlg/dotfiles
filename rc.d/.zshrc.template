@@ -1,0 +1,41 @@
+export PROFILING_MODE="${PROFILING_MODE:-0}"
+if [ $PROFILING_MODE -ne 0 ]; then
+  zmodload zsh/zprof
+fi
+
+# locale
+export LC_ALL=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+
+################################################
+#  p10k                                        #
+################################################
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+################################################
+#  cli_profile                                 #
+################################################
+# set profile repo home - configurable via DOTFILES_DIR
+profile_repo_path="${DOTFILES_DIR:-##DOTFILES_DIR##}"
+
+# install custom profile
+. ${profile_repo_path}/entrypoint/source_profile.sh
+
+################################################
+#  p10k                                        #
+################################################
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[[ ! -f ~/.p10k-overrides.zsh ]] || source ~/.p10k-overrides.zsh
+
+# profiling
+if [ $PROFILING_MODE -ne 0 ]; then
+  zprof
+fi

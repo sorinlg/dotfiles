@@ -1,0 +1,92 @@
+#!/usr/bin/env zsh
+## set command aliases in here
+
+################################################
+#  shell settings
+################################################
+
+# History Configuration - Virtually Unlimited
+export HISTSIZE=10000000              # Number of history entries kept in memory
+export SAVEHIST=10000000              # Number of history entries saved to file
+export HISTFILE="${HOME}/.zsh_history" # Explicitly set history file location
+unset HISTFILESIZE                    # Remove bash-specific limit
+
+# History Options for Better Recording
+setopt EXTENDED_HISTORY               # Record timestamp and duration
+setopt HIST_EXPIRE_DUPS_FIRST        # Expire duplicates first when trimming
+setopt HIST_FIND_NO_DUPS             # Don't display duplicates when searching
+setopt HIST_IGNORE_ALL_DUPS          # Remove older duplicate entries
+setopt HIST_IGNORE_SPACE             # Don't record commands starting with space
+setopt HIST_REDUCE_BLANKS            # Remove extra blanks from commands
+setopt HIST_SAVE_NO_DUPS             # Don't save duplicate entries
+setopt HIST_VERIFY                   # Show command before executing from history
+setopt INC_APPEND_HISTORY            # Write to history file immediately
+setopt SHARE_HISTORY                 # Share history between sessions
+
+# enable interactive comments
+setopt interactivecomments
+
+################################################
+#  key bindings
+################################################
+# go to beginning of line
+bindkey "^[[H" beginning-of-line    # fn + left
+bindkey "^A" beginning-of-line      # ctrl + a
+
+# go to end of line
+bindkey "^[[F" end-of-line          # fn + right
+bindkey "^E" end-of-line            # ctrl + e
+
+# remove from cursor to end of line
+bindkey '^K' kill-line              # ctrl + k
+
+# remove from cursor to beginning of line
+bindkey '^U' backward-kill-line     # ctrl + u
+
+# delete the word before the cursor
+bindkey '^W' backward-kill-word     # ctrl + w
+
+# delete the word after the cursor
+bindkey '^[d' kill-word             # alt/option + d
+
+# Navigate words with Option + Left/Right
+bindkey '^[b' backward-word         # alt/option + b
+bindkey '^[f' forward-word          # alt/option + f
+
+bindkey "^[[1;3D" backward-word    # Option+Leff
+bindkey "^[[1;3C" forward-word     # Option+Right
+
+################################################
+#  custom functions                            #
+################################################
+export __local_fpath="${HOME}/.fpath"
+[[ -d "${__local_fpath}" ]] || mkdir -p "${__local_fpath}"
+export fpath=(${__local_fpath} $fpath)
+
+###########################
+# Standalone Plugin Loading
+###########################
+
+# Plugin directory
+PLUGINS_DIR="${HOME}/.config/zsh/plugins"
+
+# Load Powerlevel10k theme (must be loaded before other prompt modifications)
+if [[ -f "${PLUGINS_DIR}/powerlevel10k/powerlevel10k.zsh-theme" ]]; then
+  source "${PLUGINS_DIR}/powerlevel10k/powerlevel10k.zsh-theme"
+fi
+
+# Load essential plugins for interactive functionality
+if [[ -f "${PLUGINS_DIR}/fzf-tab/fzf-tab.plugin.zsh" ]]; then
+  source "${PLUGINS_DIR}/fzf-tab/fzf-tab.plugin.zsh"
+fi
+
+# Load autosuggestions synchronously for immediate availability
+if [[ -f "${PLUGINS_DIR}/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
+  source "${PLUGINS_DIR}/zsh-autosuggestions/zsh-autosuggestions.zsh"
+fi
+
+# Load syntax highlighting last (as recommended by plugin)
+if [[ -f "${PLUGINS_DIR}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
+  source "${PLUGINS_DIR}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi
+

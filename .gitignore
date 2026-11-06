@@ -1,0 +1,25 @@
+# Ignore Serena MCP files
+.serena/
+
+# Ignore Mac system files
+*.swp
+.DS_Store
+
+# Ignore user config files
+config.sh
+lib/git/credentials
+lib/git/config
+
+# Ignore compiled files
+*.zwc
+.compile-manifest
+
+# Ignore temporary files
+*.bak
+*~
+*.tmp
+
+# Ignore VM-testing's auto-generated ssh keypair (machine-local, not a secret
+# meant to be shared, regenerated on demand if missing)
+tools/vm-testing/tart_test_key
+tools/vm-testing/tart_test_key.pub

@@ -1,0 +1,100 @@
+#!/usr/bin/env sh
+
+## create a link if it does not exist (optimized)
+_do_link() {
+  source_path="$1"
+  destination_path="$2"
+
+  if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    if command -v log_dry >/dev/null 2>&1; then
+      log_dry "Would link $source_path -> $destination_path"
+    else
+      echo "[DRY RUN] Would link $source_path -> $destination_path"
+    fi
+    return 0
+  fi
+
+  # Fast path: if link exists and points to correct location, skip
+  # Use zsh built-in :A modifier to get absolute/resolved path instead of external readlink
+  if [[ -L "$destination_path" ]] && [[ "${destination_path:A}" == "$source_path" ]] && [[ -e "$destination_path" ]]; then
+    return 0
+  fi
+
+  # Remove existing file/link if present
+  [[ -e "$destination_path" || -L "$destination_path" ]] && rm "$destination_path"
+
+  # Create new symlink
+  ln -s "$source_path" "$destination_path"
+}
+export _do_link >/dev/null
+
+## seed a real file once from a source, without symlinking
+## Use for configs that the owning app rewrites in place (e.g. Codex).
+## Copies source -> destination only when destination is missing or is a stale
+## symlink back into this repo; an existing real file is left untouched.
+_do_seed() {
+  source_path="$1"
+  destination_path="$2"
+
+  if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    if command -v log_dry >/dev/null 2>&1; then
+      log_dry "Would seed $source_path -> $destination_path"
+    else
+      echo "[DRY RUN] Would seed $source_path -> $destination_path"
+    fi
+    return 0
+  fi
+
+  # Replace a stale symlink from an older dotfiles version with a real copy.
+  if [[ -L "$destination_path" ]]; then
+    rm "$destination_path"
+  elif [[ -e "$destination_path" ]]; then
+    # App owns its file now; leave it alone.
+    return 0
+  fi
+
+  cp "$source_path" "$destination_path"
+}
+export _do_seed >/dev/null
+
+## create a gitconfig from a template (optimized with caching)
+_do_template() {
+  destination_path="$1"
+  source_path="${destination_path}.tmpl"
+
+  if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    if command -v log_dry >/dev/null 2>&1; then
+      log_dry "Would generate template $destination_path"
+    else
+      echo "[DRY RUN] Would generate template $destination_path"
+    fi
+    return 0
+  fi
+
+  # Generate work git config include if specified
+  local work_git_include=""
+  if [[ -n "${_work_config_path:-}" && -n "${_work_git_config:-}" ]]; then
+      work_git_include="  path = ${_work_config_path}/${_work_git_config}"
+  fi
+
+  # Commit signing is opt-in: only emitted when git_signing_key is set.
+  local signing_key_line="" gpg_format_line="" ssh_program_line="" gpgsign_line=""
+  if [[ -n "${git_signing_key:-}" ]]; then
+    signing_key_line="  signingkey = ${git_signing_key}"
+    gpg_format_line="  format = ssh"
+    gpgsign_line="  gpgsign = true"
+    [[ -n "${_git_ssh_sign_program:-}" ]] && ssh_program_line="  program = ${_git_ssh_sign_program}"
+  fi
+
+  # Generate template
+  sed -e "s,##GIT_SIGNING_KEY_LINE##,${signing_key_line},g" \
+      -e "s,##GIT_GPG_FORMAT_LINE##,${gpg_format_line},g" \
+      -e "s,##GIT_SSH_PROGRAM_LINE##,${ssh_program_line},g" \
+      -e "s,##GIT_GPGSIGN_LINE##,${gpgsign_line},g" \
+      -e "s,##GIT_NAME##,${git_name},g" \
+      -e "s,##GIT_EMAIL##,${git_email},g" \
+      -e "s,##GIT_ALLOWED_SIGNERS_FILE##,${_git_allowed_signers_file},g" \
+      -e "s,##WORK_GIT_CONFIG_INCLUDE##,${work_git_include},g" \
+      "${source_path}" > "${destination_path}"
+}
+export _do_template >/dev/null

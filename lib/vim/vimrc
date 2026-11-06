@@ -1,0 +1,52 @@
+" """""""" install pathogen
+" execute pathogen#infect()
+" syntax on
+" filetype plugin indent on
+
+" """"""""" pathongen plugin settings
+" let g:gitgutter_sign_column_always = 1
+
+""""""""" other settings
+" Enable line numbers
+set nu
+
+" Set folding method
+set foldmethod=indent
+
+" Enable folding column
+set foldcolumn=4
+
+" Remap <Space> key to toggle folds
+nnoremap <Space> za
+vnoremap <Space> za
+
+set background=dark
+
+colorscheme desert
+" colorscheme ron
+" colorscheme darkblue
+
+syntax enable
+
+" Disable folds when openning files
+set nofoldenable
+
+" Smart indenting?
+set autoindent
+set smartindent
+set smarttab
+
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4
+
+let_curfile = expand("%:t")
+if _curfile =~ "Makefile" || _curfile =~ "makefile" || _curfile =~ ".*\.mk"
+    set noexpandtab
+else
+    set expandtab
+endif
+
+" Highlight search matches
+set hlsearch
+
