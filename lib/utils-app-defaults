@@ -1,0 +1,110 @@
+#!/usr/bin/env zsh
+
+# Registry of GUI apps whose config lives in a macOS `defaults` preference
+# domain instead of a plain file. Add a new app by adding one entry to
+# _APP_DEFAULTS_REGISTRY (and its slug to _APP_DEFAULTS_ORDER) below —
+# no edits needed in install.sh or tools/config-sync.sh.
+#
+# Fields (|-joined): domain|process_name|repo_plist_path|noise_glob_csv
+# noise_glob_csv is a comma-separated list of zsh glob patterns matched
+# case-sensitively against top-level plist keys, e.g. "SU*,NSWindow Frame *"
+typeset -gA _APP_DEFAULTS_REGISTRY=(
+  [rectangle]="com.knollsoft.Rectangle|Rectangle|lib/rectangle/com.knollsoft.Rectangle.plist|SU*,NSWindow Frame *"
+  [clipy]="com.clipy-app.Clipy|Clipy|lib/clipy/com.clipy-app.Clipy.plist|SU*,NSWindow Frame *,SKPurchaseIntentUpdatesLastChecked,firebase-sessions-*"
+  [monitorcontrol]="app.monitorcontrol.MonitorControl|MonitorControl|lib/monitorcontrol/app.monitorcontrol.MonitorControl.plist|SU*,NSWindow Frame *,appAlreadyLaunched,buildNumber,isTouched*,maxDDC*,SwBrightness\(*,value*\(*"
+  [itsycal]="com.mowglii.ItsycalApp|Itsycal|lib/itsycal/com.mowglii.ItsycalApp.plist|SU*,NSWindow Frame *"
+  [mimestream]="com.mimestream.Mimestream|Mimestream|lib/mimestream/com.mimestream.Mimestream.plist|SU*,NSWindow Frame *,NSSplitView Subview Frames *,NSNavPanel*,NSOSPLastRootDirectory,SelectedProfileUUID*,AppVersion,AppUpgradeVersion,LastAppLaunchBuildNumber,LastLaunchDate,NewestSeenUpdateVersion,NewestSeenUpdateDisplayVersion"
+)
+
+# Explicit order (associative arrays have no stable order in zsh) — keeps
+# install.sh's import order deterministic and matching today's Rectangle,
+# then Clipy sequence.
+typeset -ga _APP_DEFAULTS_ORDER=(rectangle clipy monitorcontrol itsycal mimestream)
+
+_app_defaults_field() {
+  local entry="${_APP_DEFAULTS_REGISTRY[$1]:-}"
+  [[ -n "${entry}" ]] || return 1
+  echo "${entry}" | awk -F'|' -v i="$2" '{print $i}'
+}
+
+_app_defaults_domain()  { _app_defaults_field "$1" 1; }
+_app_defaults_process() { _app_defaults_field "$1" 2; }
+_app_defaults_plist()   { _app_defaults_field "$1" 3; }   # repo-relative
+_app_defaults_noise()   { _app_defaults_field "$1" 4; }
+_app_defaults_exists()  { [[ -n "${_APP_DEFAULTS_REGISTRY[$1]:-}" ]]; }
+
+# A defaults domain that was never written exits 0 from `defaults export`
+# with an empty <dict/> - not a reliable existence check. `defaults read`
+# exits 1 ("does not exist") for an untouched domain, so use that instead.
+_app_defaults_domain_exists() {
+  defaults read "$1" >/dev/null 2>&1
+}
+
+# _app_defaults_curate <input_plist> <output_plist> <noise_csv>
+# Copies input -> output (as XML), then deletes every top-level key
+# matching any of the comma-separated glob patterns in noise_csv. Keys are
+# enumerated via `plutil -p` (safe with embedded binary blobs) rather than
+# PlistBuddy's `Print` (which dumps raw bytes inline and can't be parsed
+# reliably).
+_app_defaults_curate() {
+  local input="$1" output="$2" noise_csv="$3"
+  cp "${input}" "${output}"
+  plutil -convert xml1 "${output}"
+
+  local -a patterns
+  patterns=("${(@s:,:)noise_csv}")
+
+  local key pattern key_escaped matched
+  # plutil -p top-level lines look like: '  "key" => value' or '  key => value'
+  plutil -p "${output}" | sed -n 's/^  "\{0,1\}\([^"=]*\)"\{0,1\} => .*/\1/p' | \
+  while IFS= read -r key; do
+    matched=false
+    for pattern in "${patterns[@]}"; do
+      if [[ "${key}" == ${~pattern} ]]; then
+        matched=true
+        break
+      fi
+    done
+    if [[ "${matched}" == true ]]; then
+      key_escaped="${key// /\\ }"
+      /usr/libexec/PlistBuddy -c "Delete :${key_escaped}" "${output}" >/dev/null 2>&1 || true
+    fi
+  done
+}
+
+# _defaults_import_and_restart <domain> <process_name> <plist_path>
+# Shared by install.sh's import loop and `config:app:push`. Imports the
+# given plist into the domain, then restarts the app if it's currently
+# running (these apps cache prefs in memory).
+#
+# `killall` returns before macOS fully tears the process down, so an `open
+# -a` fired immediately after can race LaunchServices and fail transiently
+# with `_LSOpenURLsWithCompletionHandler() ... error -600` (procNotFound).
+# Poll for the process to actually disappear (bounded, so a stuck app can't
+# hang install.sh), then retry the relaunch a couple of times. The import
+# itself already succeeded at this point, so a relaunch failure is a
+# non-fatal warning, not an install-aborting error.
+_defaults_import_and_restart() {
+  local domain="$1" process="$2" plist_path="$3"
+  defaults import "${domain}" "${plist_path}"
+
+  if pgrep -x "${process}" >/dev/null 2>&1; then
+    killall "${process}"
+
+    local _waited=0
+    while pgrep -x "${process}" >/dev/null 2>&1 && ((_waited < 20)); do
+      sleep 0.1
+      ((_waited++))
+    done
+
+    local _attempt
+    for _attempt in 1 2 3; do
+      if open -a "${process}" 2>/dev/null; then
+        return 0
+      fi
+      sleep 0.3
+    done
+
+    echo "Warning: failed to relaunch ${process} after preference import (preferences were still imported successfully)" >&2
+  fi
+}

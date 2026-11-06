@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>HideIcon</key>
+	<false/>
+	<key>HighlightedDOWs</key>
+	<integer>65</integer>
+	<key>NSStatusItem Preferred Position ItsycalStatusItem</key>
+	<real>383</real>
+	<key>SelectedCalendars</key>
+	<array>
+		<string>C04C0C8C-FE47-4010-84E5-47DC299406A7</string>
+		<string>C6D53B66-B073-4D30-B841-E884AFE38F63</string>
+		<string>7C48E029-902C-48D0-BF3C-CA511BF5BBCF</string>
+		<string>0A57B8BC-71FD-4C4D-814E-B74B9300496D</string>
+		<string>EDF3362A-316F-48A1-BF2D-5DAB5687046E</string>
+	</array>
+	<key>ShowDayOfWeekInIcon</key>
+	<true/>
+	<key>ShowEventDays</key>
+	<integer>7</integer>
+	<key>ShowLocation</key>
+	<true/>
+	<key>ShowMonthInIcon</key>
+	<true/>
+	<key>ShowWeeks</key>
+	<true/>
+	<key>SizePreference</key>
+	<real>1</real>
+</dict>
+</plist>

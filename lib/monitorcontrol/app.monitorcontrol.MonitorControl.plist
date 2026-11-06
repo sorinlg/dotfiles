@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSStatusItem Preferred Position Item-0</key>
+	<real>309</real>
+	<key>allowZeroSwBrightness</key>
+	<true/>
+	<key>disableSmoothBrightness</key>
+	<false/>
+	<key>enableBrightnessSync</key>
+	<false/>
+	<key>enableSliderPercent</key>
+	<true/>
+	<key>enableSliderSnap</key>
+	<true/>
+	<key>hideBrightness</key>
+	<false/>
+	<key>keyboardBrightness</key>
+	<integer>2</integer>
+	<key>menuIcon</key>
+	<integer>0</integer>
+	<key>multiKeyboardBrightness</key>
+	<integer>1</integer>
+	<key>multiKeyboardVolume</key>
+	<integer>1</integer>
+	<key>multiSliders</key>
+	<integer>2</integer>
+	<key>showAdvancedSettings</key>
+	<false/>
+	<key>showContrast</key>
+	<true/>
+	<key>showTickMarks</key>
+	<true/>
+	<key>useFineScaleBrightness</key>
+	<true/>
+</dict>
+</plist>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DeleteKeyAction</key>
+	<string>trash</string>
+	<key>DisabledCalendarIDs</key>
+	<dict/>
+	<key>DismissedDefaultEmailReaderBanner</key>
+	<true/>
+	<key>EnableInboxCategoryForums</key>
+	<false/>
+	<key>EnableInboxCategoryPromotions</key>
+	<true/>
+	<key>EnableInboxCategorySocial</key>
+	<true/>
+	<key>EnableInboxCategoryUpdates</key>
+	<false/>
+	<key>KeyboardShortcutSet</key>
+	<string>gmail</string>
+	<key>NSToolbar Configuration ComposeWindowToolbar</key>
+	<dict>
+		<key>TB Display Mode</key>
+		<integer>2</integer>
+		<key>TB Icon Size Mode</key>
+		<integer>1</integer>
+		<key>TB Is Shown</key>
+		<integer>1</integer>
+		<key>TB Size Mode</key>
+		<integer>1</integer>
+	</dict>
+	<key>NSToolbar Configuration MainWindowToolbar</key>
+	<dict>
+		<key>TB Display Mode</key>
+		<integer>1</integer>
+		<key>TB Icon Size Mode</key>
+		<integer>1</integer>
+		<key>TB Is Shown</key>
+		<true/>
+		<key>TB Size Mode</key>
+		<integer>1</integer>
+	</dict>
+	<key>NSToolbar Configuration StandaloneWindowToolbar</key>
+	<dict>
+		<key>TB Display Mode</key>
+		<integer>2</integer>
+		<key>TB Icon Size Mode</key>
+		<integer>1</integer>
+		<key>TB Is Shown</key>
+		<integer>1</integer>
+		<key>TB Size Mode</key>
+		<integer>1</integer>
+	</dict>
+	<key>NSToolbar Configuration com.apple.NSColorPanel</key>
+	<dict>
+		<key>TB Is Shown</key>
+		<integer>1</integer>
+	</dict>
+	<key>NotificationAction</key>
+	<string>trash</string>
+	<key>PreferredInlineImageSize</key>
+	<string>original</string>
+	<key>ShowCcRecipientsRow</key>
+	<true/>
+	<key>ShowCcRow</key>
+	<true/>
+	<key>ShowComposeFormattingBar</key>
+	<true/>
+	<key>ShowUnreadCountInMenuBar</key>
+	<false/>
+	<key>SubscribedToNewsletter</key>
+	<true/>
+	<key>TextSizeAdjustment</key>
+	<real>2</real>
+	<key>WasBetaUser</key>
+	<true/>
+	<key>WebAutomaticLinkDetectionEnabled</key>
+	<true/>
+	<key>WebContinuousSpellCheckingEnabled</key>
+	<true/>
+</dict>
+</plist>
