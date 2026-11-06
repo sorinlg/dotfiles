@@ -32,4 +32,4 @@ A ready-made company profile to fork lives in [dotfiles-work-example](https://gi
 
 ## License
 
-[MIT](LICENSE). Third-party files keep their own licenses, see the notice in `LICENSE`.
+[MIT](LICENSE). Third-party files keep their own licenses, see [NOTICE](NOTICE).
