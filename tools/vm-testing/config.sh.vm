@@ -1,0 +1,29 @@
+# Dummy config.sh for VM smoke testing (tools/vm-testing/tart-smoke-test.sh)
+# Contains no secrets, safe to commit. Mirrors config.sh.example.
+
+git_name='VM Smoke Test'
+git_email='vm-smoke-test@example.invalid'
+git_signing_key=''
+
+# Path configurations
+_config_go_path='/tmp/go'
+_go_root='/opt/homebrew/opt/go/libexec'
+_homebrew_prefix='/opt/homebrew'
+_git_allowed_signers_file="${HOME}/.ssh/allowed_signers"
+
+# API tokens (blank is fine: only used for higher Homebrew API rate limits)
+_homebrew_github_token=''
+
+# Work-specific configuration paths (unused in VM smoke test)
+_work_config_path=''
+_work_shell_config=''
+_work_git_config=''
+
+# Git prompt settings
+GIT_PS1_SHOWUPSTREAM="verbose"
+GIT_PS1_SHOWCOLORHINTS='yes'
+GIT_PS1_SHOWUNTRACKEDFILES='yes'
+GIT_PS1_DESCRIBE_STYLE='branch'
+
+# K9s integration (k9s isn't installed in the VM, so this is a no-op)
+_k9s_sync_colours=true
