@@ -1,0 +1,371 @@
+#!/usr/bin/env sh
+
+################################################
+#  GNU userland (homebrew) ahead of BSD        #
+################################################
+# Scripts launched from this shell inherit PATH: keep them GNU/BSD-portable.
+if [[ "${__kernel}" = 'darwin' ]]; then
+    _gnu_pkgs=(gawk gnu-sed coreutils findutils grep gnu-tar make gnu-which)
+    _gnu_man=()
+    for _gnu_pkg in $_gnu_pkgs; do
+        _gnu_dir="${_homebrew_prefix:-/opt/homebrew}/opt/${_gnu_pkg}/libexec"
+        [[ -d "${_gnu_dir}/gnubin" ]] && path=("${_gnu_dir}/gnubin" $path)
+        [[ -d "${_gnu_dir}/gnuman" ]] && _gnu_man+=("${_gnu_dir}/gnuman")
+    done
+    # keg-only, no gnubin
+    [[ -d "${_homebrew_prefix:-/opt/homebrew}/opt/gnu-getopt/bin" ]] && path=("${_homebrew_prefix:-/opt/homebrew}/opt/gnu-getopt/bin" $path)
+    # trailing ':' keeps man's default search path
+    (( ${#_gnu_man} )) && export MANPATH="${(j.:.)_gnu_man}:${MANPATH#:}"
+    unset _gnu_pkgs _gnu_pkg _gnu_dir _gnu_man
+fi
+
+################################################
+#  Unix aliases                                #
+################################################
+alias rm='rm -i'
+alias grep='grep -E --color=auto'
+if [[ "${__kernel}" = 'darwin' && "${path[(Ie)${_homebrew_prefix:-/opt/homebrew}/opt/coreutils/libexec/gnubin]}" -eq 0 ]]; then
+    alias ls='ls -G'
+    alias ll='ls -laG'
+elif [[ "${__kernel}" = 'darwin' ]]; then
+    alias ls='ls --color=auto'
+    alias ll='ls -la --color=auto'
+elif [[ "${__kernel}" = 'linux' ]]; then
+    alias ls='ls --color'
+    alias ll='ls -la --color'
+else
+    alias ll='ls -la'
+fi
+alias l='ls -1F'
+alias tree='tree -C'
+alias reload-shell='exec ${SHELL} -l'
+
+# Shell update helper function
+update-shell() {
+    if [[ -z "$_profile_repo_root" ]]; then
+        echo "Error: Profile repository root not set"
+        return 1
+    fi
+
+    if [[ ! -d "$_profile_repo_root" ]]; then
+        echo "Error: Dotfiles directory not found at $_profile_repo_root"
+        return 1
+    fi
+
+    echo "Updating shell configuration from $_profile_repo_root..."
+    (cd "$_profile_repo_root" && ./install.sh "$@")
+}
+
+################################################
+#  OSX                                         #
+################################################
+# add user bin folder to the PATH
+export PATH="${HOME}/bin:${PATH}"
+
+# Ghostty terminal emulator
+export PATH="/Applications/Ghostty.app/Contents/MacOS:${PATH}"
+
+# load bash-completion, installed in homebrew
+export BASH_COMPLETION_COMPAT_DIR="${_homebrew_prefix:-/opt/homebrew}/etc/bash_completion.d"
+[[ -r "${_homebrew_prefix:-/opt/homebrew}/etc/profile.d/bash_completion.sh" ]] && . "${_homebrew_prefix:-/opt/homebrew}/etc/profile.d/bash_completion.sh"
+
+################################################
+#  CLI MISC                                    #
+################################################
+# set locale
+if [[ "${__kernel}" = 'darwin' ]]; then
+    export LC_CTYPE=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    unset LC_ALL
+fi
+
+# homebrew
+if [[ "${__kernel}" = 'darwin' ]]; then
+    export HOMEBREW_GITHUB_API_TOKEN="${_homebrew_github_token}"
+fi
+
+# useful shortcuts
+alias public_ip_get='curl -s ifconfig.me'
+alias public_ip_echo='echo -e "$(public_ip_get)"'
+
+# 1password completion-only (no command wrapper)
+_register_completion_only_zsh "op"
+
+# openjdk (homebrew)
+export PATH="${_homebrew_prefix:-/opt/homebrew}/opt/openjdk/bin:$PATH"
+export CPPFLAGS="-I${_homebrew_prefix:-/opt/homebrew}/opt/openjdk/include"
+
+# SDKMAN - lazy loading for faster startup with PATH pre-population
+export SDKMAN_DIR="$HOME/.sdkman"
+
+# Add SDKMAN tools to PATH immediately (if SDKMAN is installed)
+if [[ -d "$SDKMAN_DIR/candidates" ]]; then
+  # Add current Java version to PATH
+  if [[ -L "$SDKMAN_DIR/candidates/java/current" ]]; then
+    export PATH="$SDKMAN_DIR/candidates/java/current/bin:$PATH"
+  fi
+
+  # Add current Gradle version to PATH
+  if [[ -L "$SDKMAN_DIR/candidates/gradle/current" ]]; then
+    export PATH="$SDKMAN_DIR/candidates/gradle/current/bin:$PATH"
+  fi
+
+  # Add current Maven version to PATH
+  if [[ -L "$SDKMAN_DIR/candidates/maven/current" ]]; then
+    export PATH="$SDKMAN_DIR/candidates/maven/current/bin:$PATH"
+  fi
+fi
+
+# Lazy-load SDKMAN shell functions when sdk command is used
+# This loads the SDK management functions but tools are already in PATH
+_sdkman_lazy_init() {
+  [[ -n $_sdkman_lazy_loaded ]] && return
+  _sdkman_lazy_loaded=1
+
+  if [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]]; then
+    source "$SDKMAN_DIR/bin/sdkman-init.sh"
+  fi
+}
+
+# Wrapper only for sdk command (needed for SDK version management)
+sdk() {
+  _sdkman_lazy_init
+  command sdk "$@"
+}
+
+################################################
+#  DEV :: go - GVM with lazy loading           #
+################################################
+# GVM - Go Version Manager
+export GVM_ROOT="$HOME/.gvm"
+
+# Add GVM bin to PATH immediately if GVM is installed
+# This makes the 'gvm' command available without full initialization
+if [[ -d "$GVM_ROOT" ]]; then
+  export PATH="$GVM_ROOT/bin:$PATH"
+
+  # Load GVM default environment if it exists
+  # This sets GOROOT, GOPATH, and adds Go tools to PATH
+  if [[ -f "$GVM_ROOT/environments/default" ]]; then
+    source "$GVM_ROOT/environments/default"
+  fi
+else
+  # Fallback to system Go if GVM not installed
+  export GOPATH="${_config_go_path}"
+  export GOROOT="${_go_root:-/usr/local/go}"
+  export PATH=$PATH:$GOPATH/bin
+  export PATH=$PATH:$GOROOT/bin
+fi
+
+# Lazy-load full GVM environment when gvm command is used
+# This loads GVM shell functions for version switching
+_gvm_lazy_init() {
+  [[ -n $_gvm_lazy_loaded ]] && return
+  _gvm_lazy_loaded=1
+
+  if [[ -f "$GVM_ROOT/scripts/gvm" ]]; then
+    source "$GVM_ROOT/scripts/gvm"
+  fi
+}
+
+# Wrapper for gvm command (needed for version switching)
+gvm() {
+  _gvm_lazy_init
+  command gvm "$@"
+}
+
+# Set GOPRIVATE for private repos using precmd hook
+# This runs once after shell startup, not blocking startup
+_go_goprivate_init() {
+  [[ -n $_go_goprivate_set ]] && return
+  _go_goprivate_set=1
+
+  if (( $+commands[go] )); then
+    [[ -n "${_go_private:-}" ]] && go env -w GOPRIVATE="${_go_private}" 2>/dev/null
+    # Go >=1.21 treats an explicitly empty GOPROXY as invalid and fails all
+    # module resolution, so only backfill it if it isn't already set.
+    [[ -z "$(go env GOPROXY)" ]] && go env -w GOPROXY="https://proxy.golang.org,direct" 2>/dev/null
+  fi
+}
+
+_go_init_hook() {
+  _go_goprivate_init
+  # Remove ourselves from precmd_functions after first run
+  precmd_functions=("${(@)precmd_functions:#_go_init_hook}")
+}
+
+# Only add hook if go command exists
+if (( $+commands[go] )); then
+  typeset -ag precmd_functions
+  if (( ! ${precmd_functions[(I)_go_init_hook]} )); then
+    precmd_functions=(_go_init_hook $precmd_functions)
+  fi
+fi
+
+################################################
+#  DEV :: node - lazy loading                  #
+################################################
+export NVM_DIR="$HOME/.nvm"
+
+# Add default node version to PATH immediately (if NVM is installed)
+if [[ -d "$NVM_DIR/versions/node" ]]; then
+  # Use the latest installed version (works for most setups)
+  # Glob instead of `ls | tail` to avoid forking two subprocesses on every shell startup
+  local _node_dirs=("$NVM_DIR"/versions/node/*(N/))
+  local _node_version="${_node_dirs[-1]:t}"
+
+  if [[ -n "$_node_version" ]] && [[ -d "$NVM_DIR/versions/node/$_node_version/bin" ]]; then
+    export PATH="$NVM_DIR/versions/node/$_node_version/bin:$PATH"
+  fi
+
+  unset _node_dirs _node_version
+fi
+
+# Lazy-load NVM shell functions when nvm command is used
+_nvm_lazy_init() {
+  [[ -n $_nvm_lazy_loaded ]] && return
+  _nvm_lazy_loaded=1
+  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+}
+
+nvm() {
+  _nvm_lazy_init
+  command nvm "$@"
+}
+
+################################################
+#  DEV :: python - lazy loading                #
+################################################
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+
+# Note: pyenv uses shims that are already in PATH via PYENV_ROOT/bin
+# Python tools (python, pip, etc.) work directly through shims - no wrappers needed
+# Only wrap the pyenv command itself for shell integration and completion
+
+_pyenv_lazy_init() {
+  [[ -n $_pyenv_lazy_loaded ]] && return
+  _pyenv_lazy_loaded=1
+
+  if (( $+commands[pyenv] )); then
+    eval "$(pyenv init -)"
+  fi
+}
+
+# Wrapper only for pyenv command (needed for shell integration like 'pyenv shell')
+pyenv() {
+  _pyenv_lazy_init
+  command pyenv "$@"
+}
+
+# Register completion for pyenv command
+_register_completion_only_custom "pyenv" "_pyenv_completion_init"
+
+_pyenv_completion_init() {
+  # pyenv init - loads completion automatically, but we can trigger it separately
+  if (( $+commands[pyenv] )); then
+    eval "$(pyenv init - --no-rehash 2>/dev/null || pyenv init -)"
+  fi
+}
+
+################################################
+#  DEV :: ruby - lazy loading                  #
+################################################
+# rbenv - lazy loading for faster startup
+if [[ -d "$HOME/.rbenv/bin" ]]; then
+  export PATH="$HOME/.rbenv/bin:$PATH"
+fi
+
+# Note: rbenv uses shims that are already in PATH via ~/.rbenv/bin
+# Ruby tools (ruby, gem, bundle, rake) work directly through shims - no wrappers needed
+# Only wrap the rbenv command itself for shell integration and completion
+
+_rbenv_lazy_init() {
+  [[ -n $_rbenv_lazy_loaded ]] && return
+  _rbenv_lazy_loaded=1
+
+  if (( $+commands[rbenv] )); then
+    eval "$(rbenv init -)"
+  fi
+}
+
+# Wrapper only for rbenv command (needed for shell integration like 'rbenv shell')
+rbenv() {
+  _rbenv_lazy_init
+  command rbenv "$@"
+}
+
+# Register completion for rbenv command
+_register_completion_only_custom "rbenv" "_rbenv_completion_init"
+
+_rbenv_completion_init() {
+  # rbenv init - loads completion automatically, but we can trigger it separately
+  if (( $+commands[rbenv] )); then
+    eval "$(rbenv init - 2>/dev/null)"
+  fi
+}
+
+
+################################################
+# Terraform - completion-only                  #
+################################################
+# Register terraform for bash-style completion (no command wrapper)
+_register_completion_only_bash "terraform"
+
+################################################
+# mise - polyglot version manager (reads .mise.toml / .tool-versions)
+################################################
+# Shims provide versioned tools on PATH without a shell hook — fast startup.
+# `mise activate` would add chpwd/precmd hooks for [env] auto-export, but the
+# shims alone cover per-project tool version selection for Go, Terraform,
+# terraform-docs, tflint, etc.
+export MISE_DATA_DIR="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
+if [[ -d "$MISE_DATA_DIR/shims" ]]; then
+  export PATH="$MISE_DATA_DIR/shims:$PATH"
+fi
+
+# Register completion for mise command
+_register_completion_only_zsh "mise"
+
+################################################
+# direnv - lazy loading for faster startup
+################################################
+# direnv - defer hook until first directory change
+_direnv_lazy_init() {
+  [[ -n $_direnv_lazy_loaded ]] && return
+  _direnv_lazy_loaded=1
+
+  if (( $+commands[direnv] )); then
+    eval "$(direnv hook zsh)"
+  fi
+}
+
+# Override cd to trigger direnv initialization
+cd() {
+  _direnv_lazy_init
+  builtin cd "$@"
+}
+
+################################################
+# nix
+################################################
+if [[ -e "${HOME}/.nix-profile/etc/profile.d/nix.sh" ]]; then . "${HOME}/.nix-profile/etc/profile.d/nix.sh"; fi # added by Nix installer
+
+################################################
+# kcl
+################################################
+# kcl completion-only (no command wrapper)
+_register_completion_only_zsh "kcl"
+
+################################################
+# just - command runner
+################################################
+# just completion-only (no command wrapper)
+_register_completion_only_zsh "just" "just" "just --completions zsh"
+
+################################################
+# beads (bd) - git-backed issue tracker
+################################################
+# bd completion-only (no command wrapper)
+_register_completion_only_zsh "bd"

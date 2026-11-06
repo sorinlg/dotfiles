@@ -1,0 +1,350 @@
+#!/usr/bin/env sh
+
+################################################
+#   functions                                  #
+################################################
+
+
+
+# Useful for identifying which roles are directly attached to a Group or ServiceAccount.
+# Use it alongside the kubectl auth can-i command
+function kgb() {
+  kubectl get rolebinding,clusterrolebinding --all-namespaces \
+    -o jsonpath='{range .items[?(@.subjects[0].name=="'$1'")]}{.kind};{.metadata.name};{.roleRef.kind};{.roleRef.name}{end}' \
+  | awk -F';' 'BEGIN{ print "[" } { if (NR > 1){print ","} ; print "{ \"" $1 "\":\"" $2  "\",\"" $3 "\":\"" $4 "\"}" } END{ print "]"}' \
+  | jq
+}
+
+# Simple but effective alias for filtering cluster API resources
+function kapi() {
+  local lookup="" k=""
+  for k in "$@" ; do
+    if [[ $lookup != "" ]] ; then
+      lookup+=" && "
+    fi
+    lookup+="/$k/"
+  done
+  if [[ $lookup == "" ]] ; then
+    kubectl api-resources
+  else
+    local grep_params=""
+    for k in "$@"; do grep_params+="-e "$k" " ; done
+    kubectl api-resources | awk "$lookup" | grep $(echo $grep_params)
+  fi
+}
+
+# Get XP ProviderConfigUsages. $1 = provider, $2 = ConfigName (Optional)
+function kxu() {
+  local suffix=$([ "$1" != "" ] && echo ".$1" || echo "" )
+  local pcus=$(kubectl get providerconfigusage$suffix | sort -k3,5 -b)
+  [ "$2" != "" ] && (echo "$pcus" | awk '{ if ($3 == "'$2'"){print $0} }') || echo "$pcus"
+}
+
+# Get a global overview of the status of the cluster
+#   We can use kubectl get events.
+#   The problem with it is that the output is too verbose
+#   and sometimes you want to have just an overview of the main
+#   issues of the cluster so that you can deep dive into each of those or identify more easily
+function _ke() {
+  local sorting=""
+  [ "$1" = "first_seen" ] && local sorting=(--sort-by='.lastTimestamp')
+  kubectl get events -A $sorting -o wide \
+    | sed '1 s/LAST SEEN/LAST_SEEN/;1 s/FIRST SEEN/FIRST_SEEN/' \
+    | awk '
+      NR==1 {
+        for (i=1; i<=NF; i++) {
+          nf_start[i] = match($0" ", $(i) " +" )
+        }
+        for (i=1; i<=NF; i++) {
+          chars[i, 0] = nf_start[i] - 1
+
+          if (i<NF) { chars[i, 1] = nf_start[i+1] - nf_start[i] }
+          else      { chars[i, 1] = 9999 }
+
+          printf "%s", $(i)
+          if (i < NF) { printf "%s", ":::" }
+          else        { printf "\n" }
+        }
+      }
+
+      NR>1 {
+        for (i=1; i<=length(chars)/2; i++) {
+          field = substr($0, chars[i, 0], chars[i, 1])
+          gsub(/^[ ]+/, "", field)
+          gsub(/[ ]+$/, "", field)
+          if (field == "") { field = "-" }
+          printf "%s", field
+          if (i < length(chars)/2) { printf "%s", ":::" }
+          else                     { printf "\n" }
+        }
+      }' \
+    | awk -F':::' '{
+        if ($3 != "Normal") {
+            print $1 ";" $3 ";" $4 ";" $2 ";" $9 ";" $(10) ";" $5 ";" $6 ";" $7
+        }
+    }' \
+    | column -t -s ';'
+}
+alias ke="_ke"
+alias ket="_ke first_seen"
+
+# Disable/Enable ArgoCD SYNC for APPS or APPSETS:
+
+function get_argocd_app_parent_tree() {
+    # $1 = object type (app/application or  appset/applicationset)
+    # $2 = resource name
+    local type=$1
+    local name=$2
+    local namespace="argocd"
+
+    local jsonpath="{.metadata.annotations.argocd\.argoproj\.io/tracking-id}"
+    jsonpath+="{';'}{.metadata.ownerReferences[0].kind}"
+    jsonpath+="{';'}{.metadata.ownerReferences[0].name}"
+
+    local parent_info=""
+    parent_info=$(kubectl get "$type" "$name" -n "$namespace" -o jsonpath="$jsonpath" 2>/dev/null | sed -r 's/(.*):argoproj\.io.*;(.*);(.*)/\1;\2;\3/g')
+    if [ $? -ne 0 ] || [[ "$parent_info" == "" ]] ; then return 1 ; fi
+
+    local typeless_parent_name parent_type parent_name
+    IFS=';' read -r typeless_parent_name parent_type parent_name <<< "$parent_info"
+
+    local parents=""
+    if [[ "$parent_type" != "" ]] && [[ "$parent_name" != "" ]] ; then
+        parents=$(get_argocd_app_parent_tree "$parent_type" "$parent_name")
+
+    elif [[ $typeless_parent_name != "" ]] ; then
+        kubectl get Application -n "$namespace" "$typeless_parent_name" --no-headers &>/dev/null
+        if [ $? -eq 0 ] ; then
+            parents=$(get_argocd_app_parent_tree "Application" "$typeless_parent_name")
+        else
+            kubectl get ApplicationSet -n "$namespace" "$typeless_parent_name" --no-headers &>/dev/null
+            [ $? -eq 0 ] && parents=$(get_argocd_app_parent_tree "ApplicationSet" "$typeless_parent_name")
+        fi
+
+    fi
+
+    local tree="$type/$name"
+    [[ "$parents" != "" ]] && tree="$parents\n$tree"
+    echo -en "$tree"
+}
+
+function toggle_argocd_sync_list() {
+  # $1 = Sync (true|false)
+  # $2+ = Array with the list of App or Appsets from root to leaf app. Each item must start with "app/", "application/", "appset/" or "applicationset/"
+  local sync="$1"
+  local app_list=("$@")
+
+  ! [[ "$sync" =~ "true|false" ]] && >&2 echo "Sync parameter must be either 'true' or 'false'" && return 1
+
+  local _patch_app_sync=$([[ "$sync" == "false" ]] && echo 'null' || echo '{ "automated": { "prune": true, "selfHeal": true} }' )
+  local patch_app='{"spec": { "syncPolicy": '$_patch_app_sync' } }'
+
+  local _patch_appset_ignore=$([[ "$sync" == "false" ]] && echo '[{"jsonPointers": ["/spec/syncPolicy"] }]' || echo 'null' )
+  local patch_appset='{"spec": { "ignoreApplicationDifferences": '$_patch_appset_ignore' } }'
+
+  local index=0
+  local item
+  for item in "${app_list[@]}" ; do
+    if [ $index -eq 0 ] ; then index=1 ; continue ; fi
+    if [[ "$item" =~ ^((appsets?)|([aA]pplication[sS]et)).* ]]; then
+      kubectl patch "$item" -n argocd --type merge -p "$patch_appset"
+    else
+      kubectl patch "$item" -n argocd --type merge -p "$patch_app"
+    fi
+  done
+}
+
+function toggle_argocd_sync() {
+  # $1 = Sync (true|false)
+  # $2 = object type (app/application or  appset/applicationset)
+  # $3 = resource name
+  local app_tree_string
+  app_tree_string=$(get_argocd_app_parent_tree "$2" "$3")
+  [ $? -ne 0 ] && 2>&1 echo "Failed to obtain the ArgoCD app tree of '$2/$3' " && return 1
+
+  local app_tree_list=($(echo "$app_tree_string"))
+  echo "Sync=$1 for the following applications":
+  local item ; for item in "${app_tree_list[@]}" ; do echo "- $item" ; done
+  echo ""
+
+  toggle_argocd_sync_list "$1" "${app_tree_list[@]}"
+}
+
+
+# Example:
+# Disable/Enable Kyverno controller/policies ArgoCD SYNC in MTP:
+#
+# # DEMO CELLS: ===============================================================
+# REGION=ca-central-1 ; CELL=main
+# APP_LIST=(
+#   "application/demo-catalog-seed-prod-mtp-$REGION-$CELL"
+#   "application/kyverno-controller--prod-mtp-$REGION-$CELL" # Controller
+#   "application/kyverno-policies--prod-mtp-$REGION-$CELL"   # Policies
+# )
+# toggle_argocd_sync_list "false" "${APP_LIST[@]}"
+#
+# # Or just:
+# REGION=ca-central-1 ; CELL=main
+# toggle_argocd_sync "false" "application" "kyverno-policies--prod-mtp-$REGION-$CELL"
+#
+# # NORMAL CELLS: =============================================================
+# REGION=eu-west-2 ; CELL=main
+# APP_LIST=(
+#   "application/sdlc-gitops-catalog-seed-mtp"
+#   "applicationset/kyverno-controller--mtp-entrypoint-appset"
+#   "application/kyverno-controller--mtp-$REGION-$CELL"        # Controller
+# )
+# toggle_argocd_sync_list "false" "${APP_LIST[@]}"
+#
+# Or just:
+# REGION=eu-west-2 ; CELL=main
+# toggle_argocd_sync "false" "application" "kyverno-controller--mtp-$REGION-$CELL"
+
+################################################
+#   kubectx & kubeswitch                       #
+################################################
+# ## kubectx
+# alias ks='kubectx'
+
+# ## clear k8s environment variables
+kc() {
+  kubectx -u &> /dev/null
+  unset KUBECONFIG
+}
+export kc >/dev/null
+
+## kubeswitch - lazy loading for faster startup
+_kubeswitch_lazy_init() {
+  [[ -n $_kubeswitch_lazy_loaded ]] && return
+  _kubeswitch_lazy_loaded=1
+
+  if (( $+commands[switcher] )); then
+    source <(switcher init zsh)
+    source <(switch completion zsh)
+  fi
+}
+
+# Wrapper for switch command to ensure lazy loading
+switch() {
+  _kubeswitch_lazy_init
+  command switch "$@"
+}
+
+# ks function that uses switch set-context
+ks() {
+  _kubeswitch_lazy_init
+  switch set-context "$@"
+}
+
+# Set up completion for ks to work like switch set-context (deferred)
+_ks_completion() {
+  _kubeswitch_lazy_init
+
+  if (( $+functions[_switch] )); then
+    # Temporarily modify the words array to make it look like "switch set-context ..."
+    local original_words=("${words[@]}")
+    local original_current=$CURRENT
+
+    words=(switch set-context "${original_words[@]:1}")
+    CURRENT=$((original_current + 1))
+
+    _switch
+
+    # Restore original context
+    words=("${original_words[@]}")
+    CURRENT=$original_current
+  fi
+}
+
+compdef _ks_completion ks
+
+################################################
+#  Kubernetes                                  #
+################################################
+# kubectl
+## aliases
+alias k=kubectl  # Completion handled separately below
+alias k9="k9s -cpu"
+alias stern="kubectl stern"
+# alias kustomize='kubectl kustomize'
+alias kk=kustomize
+kkl() { kustomize | less }
+alias kg='kubectl get -oyaml'
+alias kgp='kubectl get pods'
+alias kget=kg
+alias kgo=kg
+alias kl='kubectl lineage'
+alias kd='kubectl describe'
+alias kubens='kubectl ns'
+alias kns=kubens
+alias kexec='kubectl exec -it'
+alias kw='kubectl get -w'
+alias kfinish="kubectl patch --type merge -p '{\"metadata\":{\"finalizers\":[]}}'"
+
+
+# Printing pods in a current incorrect state
+kpc() { kubectl get pod -A | grep -v 'Running|Completed' }
+
+# kubectl-dyff
+export KUBECTL_EXTERNAL_DIFF="dyff between --omit-header --set-exit-code"
+
+# krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+# helm
+export PATH="/opt/homebrew/opt/helm@3/bin:$PATH"
+
+## completion - lazy loaded using generic functions
+# Register k8s tools for completion-only (no command wrappers)
+_register_completion_only_zsh "kubectl"
+_register_completion_only_zsh "k" "kubectl" "kubectl completion zsh"
+_register_completion_only_zsh "k9s"
+_register_completion_only_zsh "helm"
+
+# generic
+alias explode="yq 'explode(.)'"
+
+# ArgoCD
+alias argo-pause="kubectl patch --type=json -p='[{"op": "add", "path": "/metadata/annotations/argocd.argoproj.io~1skip-reconcile", "value": "\"true\""}]'"
+alias argo-resume="kubectl patch --type=json -p='[{"op": "remove", "path": "/metadata/annotations/argocd.argoproj.io~1skip-reconcile"}]'"
+
+# ArgoCD completion-only (no command wrapper)
+_register_completion_only_zsh "argocd"
+
+# Crossplane
+alias crossplane-pause="kubectl patch --type=json -p='[{"op": "add", "path": "/metadata/annotations/crossplane.io~1paused", "value": "\"true\""}]'"
+alias crossplane-resume="kubectl patch --type=json -p='[{"op": "remove", "path": "/metadata/annotations/crossplane.io~1paused"}]'"
+alias patchit="k patch -p '{\"metadata\":{\"finalizers\":[]}}' --type=merge"
+alias xpt="crossplane beta trace"
+
+
+################################################
+#  Flux                                        #
+################################################
+
+# Flux completion-only (no command wrapper)
+_register_completion_only_zsh "flux"
+
+kfc() {
+  kubectl kustomize \
+  | env $(kubectl get -n flux-system cm gitops-context -o yaml \
+          | yq e '.data | to_entries[] | "\(.key)=\(.value)"') \
+    flux envsubst
+}
+
+# tofu-controller completion-only (no command wrapper)
+_register_completion_only_zsh "tfctl"
+
+################################################
+#  vCluster                                    #
+################################################
+# vCluster completion-only (no command wrapper)
+_register_completion_only_zsh "vcluster"
+
+################################################
+#  K9s                                         #
+################################################
+# K9s/sofka color sync helper - regenerate k9s skins/context configs and sofka color overrides
+k9s-sync-colors() {
+  "${DOTFILES_DIR}/tools/generate-k9s-skins.sh"
+}

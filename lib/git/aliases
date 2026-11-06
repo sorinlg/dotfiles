@@ -1,0 +1,58 @@
+[core]
+  editor = vim
+
+[merge]
+  tool = vimdiff
+
+[pager]
+  log = false
+
+[alias]
+  amend = !git st && git --no-pager di && git add . && git ci --amend --no-edit && git push --force-with-lease
+  s = status
+  st = status -sb
+  lg = log --graph --abbrev-commit --date=relative
+  # commit with a Refs: <TICKET> trailer derived from the branch name.
+  # override with REFS=KEY-1 g ci …   |   opt out with REFS= g ci …  or  g cin …
+  ci = "!f() { \
+      cd \"${GIT_PREFIX:-.}\" || exit 1; \
+      if [ -n \"${REFS+set}\" ]; then r=$REFS; else \
+        r=$(git symbolic-ref -q --short HEAD | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -n1); \
+      fi; \
+      if [ -n \"$r\" ]; then \
+        git -c trailer.ifexists=addIfDifferent commit --trailer \"Refs: $r\" \"$@\"; \
+      else \
+        git commit \"$@\"; \
+      fi; \
+    }; f"
+  cin = commit
+  co = checkout
+  br = branch
+  di = diff
+  dic = diff --cached
+  wt = worktree
+
+[color]
+  branch = auto
+  diff = auto
+  interactive = auto
+  status = auto
+  ui = auto
+
+[format]
+  pretty = "%Cred%h%Creset %aN (%ae) %C(blue)[%(trailers:key=Refs,valueonly,separator=%x20)]%Creset%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset"
+
+[rerere]
+  enabled = 1
+
+[fetch]
+  prune = true
+  recurseSubmodules = true
+
+# automatically rebase when pulling
+[pull]
+  rebase = true
+
+# automatically stash changes before rebasing
+[rebase]
+  autoStash = true

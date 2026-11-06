@@ -1,0 +1,12 @@
+[include]
+  path = .gitconfig_credentials
+  path = .gitconfig_aliases
+##WORK_GIT_CONFIG_INCLUDE##
+[push]
+  default = simple
+[init]
+  defaultBranch = main
+[url "ssh://git@github.com/"]
+  insteadOf = https://github.com/
+[gpg "ssh"]
+	allowedSignersFile = ##GIT_ALLOWED_SIGNERS_FILE##

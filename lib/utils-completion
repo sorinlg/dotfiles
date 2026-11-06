@@ -1,0 +1,404 @@
+#!/usr/bin/env zsh
+
+################################################
+#  Generic Completion Utilities                #
+################################################
+# This file provides generic functions for lazy loading completions
+# to reduce code duplication and improve maintainability
+
+# Global variable to store completion state
+typeset -gA _COMPLETION_LOADED
+
+################################################
+#  ZSH Completion Registration (eval-based)    #
+################################################
+# Register a tool for lazy-loaded ZSH completion
+# Usage: _register_lazy_completion_zsh "tool_name" ["tool_command"] ["completion_command"]
+#   tool_name: Name of the tool (used for function names and state tracking)
+#   tool_command: Actual command name (defaults to tool_name)
+#   completion_command: Command to generate completion (defaults to "tool_name completion zsh")
+#
+# Example: _register_lazy_completion_zsh "kubectl"
+# Example: _register_lazy_completion_zsh "k" "kubectl" "kubectl completion zsh"
+#
+# DEPRECATED: This function creates command wrappers that shadow real binaries.
+# Use _register_completion_only_zsh for tools that only need completion loading.
+# Use _register_command_wrapper for tools that need environment initialization.
+_register_lazy_completion_zsh() {
+    local tool_name="$1"
+    local tool_command="${2:-$tool_name}"
+    local completion_command="${3:-$tool_name completion zsh}"
+
+    if [[ -z "$tool_name" ]]; then
+        echo "Error: tool_name is required" >&2
+        return 1
+    fi
+
+    # Create lazy init function using eval (more compatible)
+    eval "_${tool_name}_lazy_init() {
+        [[ -n \$_COMPLETION_LOADED[$tool_name] ]] && return
+        _COMPLETION_LOADED[$tool_name]=1
+
+        if command -v $tool_command >/dev/null 2>&1; then
+            eval \"\$($completion_command 2>/dev/null)\" 2>/dev/null || true
+        fi
+    }"
+
+    # Create completion function that triggers lazy loading
+    eval "_${tool_name}_completion() {
+        _${tool_name}_lazy_init
+        if (( \$+functions[_$tool_command] )); then
+            _$tool_command \"\$@\"
+        else
+            _default
+        fi
+    }"
+
+    # Create wrapper function that triggers lazy loading
+    eval "$tool_name() {
+        _${tool_name}_lazy_init
+        command $tool_command \"\$@\"
+    }"
+
+    # Register completion function
+    compdef _${tool_name}_completion $tool_name 2>/dev/null
+}
+
+################################################
+#  ZSH Completion-Only Registration            #
+################################################
+# Register a tool for lazy-loaded ZSH completion WITHOUT creating a command wrapper
+# This allows 'command -v' to find the real binary (important for IDE integration)
+#
+# Usage: _register_completion_only_zsh "tool_name" ["tool_command"] ["completion_command"]
+#   tool_name: Name of the tool (used for function names and state tracking)
+#   tool_command: Actual command name (defaults to tool_name)
+#   completion_command: Command to generate completion (defaults to "tool_name completion zsh")
+#
+# Example: _register_completion_only_zsh "kubectl"
+# Example: _register_completion_only_zsh "k" "kubectl" "kubectl completion zsh"
+_register_completion_only_zsh() {
+    local tool_name="$1"
+    local tool_command="${2:-$tool_name}"
+    local completion_command="${3:-$tool_name completion zsh}"
+
+    if [[ -z "$tool_name" ]]; then
+        echo "Error: tool_name is required" >&2
+        return 1
+    fi
+
+    # Create lazy init function using eval (more compatible)
+    eval "_${tool_name}_compl_lazy_init() {
+        [[ -n \$_COMPLETION_LOADED[$tool_name] ]] && return
+        _COMPLETION_LOADED[$tool_name]=1
+
+        if command -v $tool_command >/dev/null 2>&1; then
+            eval \"\$($completion_command 2>/dev/null)\" 2>/dev/null || true
+        fi
+    }"
+
+    # Create completion function that triggers lazy loading
+    # NOTE: No command wrapper is created - tool remains discoverable in PATH
+    eval "_${tool_name}_completion() {
+        _${tool_name}_compl_lazy_init
+        if (( \$+functions[_$tool_command] )); then
+            _$tool_command \"\$@\"
+        else
+            _default
+        fi
+    }"
+
+    # Register completion function (no command wrapper)
+    compdef _${tool_name}_completion $tool_name 2>/dev/null
+}
+
+################################################
+#  Bash Completion-Only Registration           #
+################################################
+# Register a tool for lazy-loaded Bash completion WITHOUT creating a command wrapper
+# This allows 'command -v' to find the real binary (important for IDE integration)
+#
+# Usage: _register_completion_only_bash "tool_name" ["tool_command"] ["completion_args"]
+#   tool_name: Name of the tool
+#   tool_command: Actual command name (defaults to tool_name)
+#   completion_args: Arguments for complete command (defaults to "-o nospace -C $tool_command")
+#
+# Example: _register_completion_only_bash "terraform"
+_register_completion_only_bash() {
+    local tool_name="$1"
+    local tool_command="${2:-$tool_name}"
+    local completion_args="${3:--o nospace -C $tool_command}"
+
+    if [[ -z "$tool_name" ]]; then
+        echo "Error: tool_name is required" >&2
+        return 1
+    fi
+
+    # Create lazy init function using eval (more compatible)
+    eval "_${tool_name}_compl_lazy_init() {
+        [[ -n \$_COMPLETION_LOADED[$tool_name] ]] && return
+        _COMPLETION_LOADED[$tool_name]=1
+
+        if command -v $tool_command >/dev/null 2>&1; then
+            # Load bash completion for the tool
+            autoload -U +X bashcompinit && bashcompinit
+            complete $completion_args $tool_command
+        fi
+    }"
+
+    # Create completion function that triggers lazy loading
+    # NOTE: No command wrapper is created - tool remains discoverable in PATH
+    eval "_${tool_name}_completion() {
+        _${tool_name}_compl_lazy_init
+        # Let the tool handle its own completion after init
+        local words
+        words=(\${(z)BUFFER})
+        if [[ \${#words} -gt 1 ]]; then
+            # Pass to tool for completion if it supports help
+            reply=(\$($tool_command -help \${words[2,-1]} 2>/dev/null | grep -E '^\s+\S+' | awk '{print \$1}' || true))
+        fi
+    }"
+
+    # Register completion function (no command wrapper)
+    compdef _${tool_name}_completion $tool_name 2>/dev/null
+}
+
+################################################
+#  Bash Completion Registration                 #
+################################################
+# Register a tool for lazy-loaded Bash completion via bashcompinit
+# Usage: _register_lazy_completion_bash "tool_name" ["tool_command"] ["completion_args"]
+#   tool_name: Name of the tool
+#   tool_command: Actual command name (defaults to tool_name)
+#   completion_args: Arguments for complete command (defaults to "-o nospace -C $tool_command")
+#
+# Example: _register_lazy_completion_bash "terraform"
+#
+# DEPRECATED: This function creates command wrappers that shadow real binaries.
+# Use _register_completion_only_bash for tools that only need completion loading.
+_register_lazy_completion_bash() {
+    local tool_name="$1"
+    local tool_command="${2:-$tool_name}"
+    local completion_args="${3:--o nospace -C $tool_command}"
+
+    if [[ -z "$tool_name" ]]; then
+        echo "Error: tool_name is required" >&2
+        return 1
+    fi
+
+    # Create lazy init function using eval (more compatible)
+    eval "_${tool_name}_lazy_init() {
+        [[ -n \$_COMPLETION_LOADED[$tool_name] ]] && return
+        _COMPLETION_LOADED[$tool_name]=1
+
+        if command -v $tool_command >/dev/null 2>&1; then
+            # Load bash completion for the tool
+            autoload -U +X bashcompinit && bashcompinit
+            complete $completion_args $tool_command
+        fi
+    }"
+
+    # Create completion function that triggers lazy loading
+    eval "_${tool_name}_completion() {
+        _${tool_name}_lazy_init
+        # Let the tool handle its own completion after init
+        local words
+        words=(\${(z)BUFFER})
+        if [[ \${#words} -gt 1 ]]; then
+            # Pass to tool for completion if it supports help
+            reply=(\$($tool_command -help \${words[2,-1]} 2>/dev/null | grep -E '^\s+\S+' | awk '{print \$1}' || true))
+        fi
+    }"
+
+    # Create wrapper function that triggers lazy loading
+    eval "$tool_name() {
+        _${tool_name}_lazy_init
+        command $tool_command \"\$@\"
+    }"
+
+    # Register completion function
+    compdef _${tool_name}_completion $tool_name 2>/dev/null
+}
+
+################################################
+#  Custom Completion-Only Registration         #
+################################################
+# Register a tool with custom completion function WITHOUT creating a command wrapper
+# This allows 'command -v' to find the real binary (important for IDE integration)
+#
+# Usage: _register_completion_only_custom "tool_name" "init_function"
+#   tool_name: Name of the tool
+#   init_function: Function to call for initialization (should set up completion)
+#
+# Example: _register_completion_only_custom "aws" "_aws_completion_init"
+_register_completion_only_custom() {
+    local tool_name="$1"
+    local init_function="$2"
+
+    if [[ -z "$tool_name" || -z "$init_function" ]]; then
+        echo "Error: tool_name and init_function are required" >&2
+        return 1
+    fi
+
+    # Create lazy init wrapper using eval (more compatible)
+    eval "_${tool_name}_compl_lazy_init() {
+        [[ -n \$_COMPLETION_LOADED[$tool_name] ]] && return
+        _COMPLETION_LOADED[$tool_name]=1
+
+        if declare -f $init_function >/dev/null 2>&1; then
+            $init_function
+        fi
+    }"
+
+    # Create completion wrapper that triggers lazy loading
+    # NOTE: No command wrapper is created - tool remains discoverable in PATH
+    eval "_${tool_name}_completion() {
+        _${tool_name}_compl_lazy_init
+        # Completion is handled by the init_function setup
+    }"
+
+    # Register completion function (no command wrapper)
+    compdef _${tool_name}_completion $tool_name 2>/dev/null
+}
+
+################################################
+#  Custom Completion Registration               #
+################################################
+# Register a tool with custom completion function (for complex cases)
+# Usage: _register_lazy_completion_custom "tool_name" "init_function" "completion_function" ["tool_command"]
+#   tool_name: Name of the tool
+#   init_function: Function to call for initialization
+#   completion_function: Function to call for completion
+#   tool_command: Actual command name (defaults to tool_name)
+#
+# Example: _register_lazy_completion_custom "awss" "_awss_init" "_awss_completion"
+#
+# DEPRECATED: This function creates command wrappers that shadow real binaries.
+# Use _register_completion_only_custom for tools that only need completion loading.
+_register_lazy_completion_custom() {
+    local tool_name="$1"
+    local init_function="$2"
+    local completion_function="$3"
+    local tool_command="${4:-$tool_name}"
+
+    if [[ -z "$tool_name" || -z "$init_function" || -z "$completion_function" ]]; then
+        echo "Error: tool_name, init_function, and completion_function are required" >&2
+        return 1
+    fi
+
+    # Create lazy init wrapper using eval (more compatible)
+    eval "_${tool_name}_lazy_init() {
+        [[ -n \$_COMPLETION_LOADED[$tool_name] ]] && return
+        _COMPLETION_LOADED[$tool_name]=1
+
+        if declare -f $init_function >/dev/null 2>&1; then
+            $init_function
+        fi
+    }"
+
+    # Create completion wrapper that triggers lazy loading
+    eval "_${tool_name}_completion_wrapper() {
+        _${tool_name}_lazy_init
+        if declare -f $completion_function >/dev/null 2>&1; then
+            $completion_function \"\$@\"
+        else
+            _default
+        fi
+    }"
+
+    # Create command wrapper that triggers lazy loading
+    eval "$tool_name() {
+        _${tool_name}_lazy_init
+        command $tool_command \"\$@\"
+    }"
+
+    # Register completion function
+    compdef _${tool_name}_completion_wrapper $tool_name 2>/dev/null
+}
+
+################################################
+#  Grouped Completion Registration             #
+################################################
+# Register multiple related tools with a shared lazy init function
+# Usage: _register_lazy_completion_group "group_name" "init_function" "tool1:completion1" "tool2:completion2" ...
+#   group_name: Name of the group (for state tracking)
+#   init_function: Single function to call for initialization
+#   tool entries: "tool_name:completion_function" pairs
+#
+# Example: _register_lazy_completion_group "k8s" "_k8s_init" "kubectl:_kubectl" "helm:_helm" "k9s:_k9s"
+_register_lazy_completion_group() {
+    local group_name="$1"
+    local init_function="$2"
+    shift 2
+
+    if [[ -z "$group_name" || -z "$init_function" ]]; then
+        echo "Error: group_name and init_function are required" >&2
+        return 1
+    fi
+
+    # Create shared lazy init function
+    eval "_${group_name}_lazy_init() {
+        [[ -n \$_COMPLETION_LOADED[$group_name] ]] && return
+        _COMPLETION_LOADED[$group_name]=1
+
+        if declare -f $init_function >/dev/null 2>&1; then
+            $init_function
+        fi
+    }"
+
+    # Process each tool in the group
+    local tool_entry
+    for tool_entry in "$@"; do
+        local tool_name="${tool_entry%%:*}"
+        local completion_func="${tool_entry##*:}"
+
+        if [[ -n "$tool_name" && -n "$completion_func" ]]; then
+            # Create completion wrapper for this tool
+            eval "_${tool_name}_completion() {
+                _${group_name}_lazy_init
+                if (( \$+functions[$completion_func] )); then
+                    $completion_func \"\$@\"
+                else
+                    _default
+                fi
+            }"
+
+            # Create command wrapper
+            eval "$tool_name() {
+                _${group_name}_lazy_init
+                command $tool_name \"\$@\"
+            }"
+
+            # Register completion
+            compdef _${tool_name}_completion $tool_name 2>/dev/null
+        fi
+    done
+}
+
+################################################
+#  Utility Functions                           #
+################################################
+# Check if a completion is loaded
+_is_completion_loaded() {
+    local tool_name="$1"
+    [[ -n "${_COMPLETION_LOADED[$tool_name]}" ]]
+}
+
+# Force reload a completion (for debugging)
+_reload_completion() {
+    local tool_name="$1"
+    unset "_COMPLETION_LOADED[$tool_name]"
+    if declare -f "_${tool_name}_lazy_init" >/dev/null 2>&1; then
+        _${tool_name}_lazy_init
+    fi
+}
+
+# List all registered completions and their status
+_list_completions() {
+    echo "Registered lazy completions:"
+    for tool in "${(@k)_COMPLETION_LOADED}"; do
+        local status="${_COMPLETION_LOADED[$tool]:+loaded}"
+        status="${status:-not loaded}"
+        echo "  $tool: $status"
+    done
+}

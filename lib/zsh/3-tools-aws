@@ -1,0 +1,67 @@
+#!/usr/bin/env sh
+
+################################################
+#   functions                                  #
+################################################
+## get the list of AWS profiles
+_get_aws_profiles() {
+  grep -oE '^\[\s*profile\s*([^[]+)\]' $HOME/.aws/config | sed -E 's/\[\s*profile //g' | sed -E 's/\]//g' | sort
+}
+export _get_aws_profiles
+
+## get the list of AWS regions
+_get_aws_regions() {
+  aws ec2 describe-regions | yq -r '.Regions[].RegionName'
+}
+export _get_aws_regions
+
+## clear AWS environment variables
+awsc() {
+  if [ -n "$AWS_VAULT" ]; then
+    unset $(env | grep AWS_ | grep -v AWS_VAULT_BACKEND | grep -v AWS_VAULT_PASS_PREFIX | grep -v AWS_VAULT_KEYCHAIN_NAME | grep -v GPG_TTY | cut -d= -f1) 2>/dev/null;
+  fi
+}
+export awsc
+
+## clear aws-vault environment variables
+clear_aws_vault() {
+  aws-vault clear 2>/dev/null
+  gpg-connect-agent reloadagent /bye
+}
+export clear_aws_vault
+
+## clear all environment variables: aws, k8s, aws-vault
+clear_all() {
+  awsc
+  kc
+  clear_aws_vault
+}
+export clear_all
+
+################################################
+#  AWS                                         #
+################################################
+# aws completion - lazy loaded with custom bash completion (no command wrapper)
+# AWS uses special bash completion via aws_completer
+_aws_completion_init() {
+  # Load bash completion for AWS CLI
+  autoload -U +X bashcompinit && bashcompinit
+
+  if (( $+commands[aws_completer] )); then
+    complete -o nospace -C "${commands[aws_completer]}" aws
+  fi
+}
+
+_register_completion_only_custom "aws" "_aws_completion_init"
+
+# use macOS keychain for aws-vault
+export AWS_VAULT_KEYCHAIN_NAME='login'
+################################################
+#  GPG                                         #
+################################################
+export GPG_TTY=${TTY}
+
+################################################
+#  Helpers                                     #
+################################################
+alias awss=". ${__local_bin}/awss" # see Misc/aws helper script

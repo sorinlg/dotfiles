@@ -1,0 +1,54 @@
+#!/usr/bin/env sh
+
+################################################
+#  git                                         #
+################################################
+# git completion
+zstyle ':completion:*:*:git:*' script "$_profile_repo_root/lib/git/completion.bash"
+fpath=(${__local_bin} $fpath)
+
+# helper aliases
+alias g='git'
+compdef g=git
+
+# ci/cin are shell-alias wrappers around commit; complete them as such
+_git_ci()  { _git_commit "$@" }
+_git_cin() { _git_commit "$@" }
+
+# clean up branches
+alias git-list-untracked='git fetch --prune && git branch -r | awk "{print \$1}" | grep -Ev -f /dev/fd/0 <(git branch -vv | grep origin) | awk "{print \$1}"'
+alias git-clean-untracked='git-list-untracked | xargs -n1 -I{} git br -D {}'
+################################################
+#  gh                                         #
+################################################
+# GitHub CLI lazy loading
+_gh_lazy_init() {
+  [[ -n $_gh_lazy_loaded ]] && return
+  _gh_lazy_loaded=1
+
+  if (( $+commands[gh] )); then
+    # Generate completion and source it directly
+    eval "$(gh completion -s zsh)"
+    # Also save to file for future use
+    gh completion -s zsh > ${__local_fpath}/_gh 2>/dev/null || true
+  fi
+}
+
+# Completion function that triggers lazy loading
+_gh_completion() {
+  _gh_lazy_init
+  # After loading, the completion should be available
+  if (( $+functions[_gh] )); then
+    _gh "$@"
+  else
+    _default
+  fi
+}
+
+gh() {
+  _gh_lazy_init
+  command gh "$@"
+}
+
+# Register completion function
+compdef _gh_completion gh
